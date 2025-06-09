@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            var apiResult by remember { mutableStateOf<List<String>>(emptyList()) }
+            var apiResult by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
 
             LaunchedEffect(Unit) {
                 val result = searchRestaurants()
@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
             }
 
             MainScreen(restaurantUrls = apiResult) // <-- החלפנו את RestaurantScreen
+
         }
     }
 }
