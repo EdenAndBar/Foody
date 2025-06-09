@@ -17,7 +17,7 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
 }
 
 @Composable
-fun MainScreen(restaurantUrls: List<String>) {
+fun MainScreen(restaurantUrls: List<Pair<String, String>>) {
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
 
     Scaffold(
@@ -41,7 +41,7 @@ fun MainScreen(restaurantUrls: List<String>) {
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (selectedItem) {
-                is BottomNavItem.Main -> RestaurantScreen(urls = restaurantUrls)
+                is BottomNavItem.Main -> RestaurantScreen(restaurants = restaurantUrls)
                 is BottomNavItem.Favorites -> Text("Favorites Screen")
                 is BottomNavItem.Location -> Text("Filter by Location")
                 is BottomNavItem.Category -> Text("Filter by Category")
@@ -49,3 +49,4 @@ fun MainScreen(restaurantUrls: List<String>) {
         }
     }
 }
+
