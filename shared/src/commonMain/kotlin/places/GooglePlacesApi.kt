@@ -2,13 +2,10 @@ package places
 
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
-
-val client = HttpClient(CIO)
 
 @Serializable
 data class PlacesResponse(val results: List<PlaceResult>)
@@ -20,7 +17,9 @@ private val json = Json {
     ignoreUnknownKeys = true
 }
 
-suspend fun searchRestaurants(): String {
+suspend fun searchRestaurants(): List<String> {
+    val client = getHttpClient()
+
     val response: HttpResponse = client.get("https://maps.googleapis.com/maps/api/place/nearbysearch/json") {
         parameter("location", "32.0853,34.7818")
         parameter("radius", "1500")
@@ -31,5 +30,5 @@ suspend fun searchRestaurants(): String {
     val responseBody = response.bodyAsText()
     val parsed = json.decodeFromString<PlacesResponse>(responseBody)
 
-    return parsed.results.joinToString("\n") { it.name }
+    return parsed.results.map { it.name }
 }
