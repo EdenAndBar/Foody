@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import places.searchRestaurants
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -21,10 +20,8 @@ class MainActivity : ComponentActivity() {
                 apiResult = result.take(10)
             }
 
-            MainScreen(restaurantUrl = apiResult)
+            MainScreen(restaurantUrls = apiResult) // <-- החלפנו את RestaurantScreen
 
-            //RestaurantScreen(restaurants = apiResult)
         }
-
     }
 }
