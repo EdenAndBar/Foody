@@ -22,8 +22,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Text
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.layout.Column
+
+
+
 
 @Composable
 fun RestaurantImage(restaurant: Pair<String, String>) {
@@ -61,9 +70,26 @@ fun RestaurantImage(restaurant: Pair<String, String>) {
 
 @Composable
 fun RestaurantScreen(restaurants: List<Pair<String, String>>) {
-    LazyColumn {
-    items(restaurants) { restaurant ->
-        RestaurantImage(restaurant)
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredRestaurants = restaurants.filter {
+        it.first.contains(searchQuery, ignoreCase = true)
     }
+
+    Column {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            label = { Text("Search restaurants") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        )
+
+        LazyColumn {
+            items(filteredRestaurants) { restaurant ->
+                RestaurantImage(restaurant)
+            }
+        }
     }
 }
