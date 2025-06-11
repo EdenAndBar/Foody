@@ -22,8 +22,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Text
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontFamily
+
+
+
+
+
 
 @Composable
 fun RestaurantImage(restaurant: Pair<String, String>) {
@@ -31,9 +45,9 @@ fun RestaurantImage(restaurant: Pair<String, String>) {
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .padding(8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .shadow(4.dp, RoundedCornerShape(12.dp)),
+            .padding(10.dp)
+            .clip(RoundedCornerShape(19.dp))
+            .shadow(4.dp, RoundedCornerShape(19.dp)),
         contentAlignment = Alignment.Center
     ) {
         AsyncImage(
@@ -53,7 +67,8 @@ fun RestaurantImage(restaurant: Pair<String, String>) {
             style = MaterialTheme.typography.h6,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily.SansSerif
         )
     }
 
@@ -61,9 +76,38 @@ fun RestaurantImage(restaurant: Pair<String, String>) {
 
 @Composable
 fun RestaurantScreen(restaurants: List<Pair<String, String>>) {
-    LazyColumn {
-    items(restaurants) { restaurant ->
-        RestaurantImage(restaurant)
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredRestaurants = restaurants.filter {
+        it.first.contains(searchQuery, ignoreCase = true)
     }
+
+    Column {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            label = {
+                Text(
+                    text = "Search restaurants",
+                    fontSize = 16.sp
+                )
+            },
+            leadingIcon = {
+                androidx.compose.material3.Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Search,
+                    contentDescription = "Search Icon"
+                )
+            },
+            shape = RoundedCornerShape(19.dp), // פינות מעוגלות יותר
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        )
+
+        LazyColumn {
+            items(filteredRestaurants) { restaurant ->
+                RestaurantImage(restaurant)
+            }
+        }
     }
 }
