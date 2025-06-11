@@ -30,6 +30,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontFamily
+
+
 
 
 
@@ -40,9 +45,9 @@ fun RestaurantImage(restaurant: Pair<String, String>) {
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .padding(8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .shadow(4.dp, RoundedCornerShape(12.dp)),
+            .padding(10.dp)
+            .clip(RoundedCornerShape(19.dp))
+            .shadow(4.dp, RoundedCornerShape(19.dp)),
         contentAlignment = Alignment.Center
     ) {
         AsyncImage(
@@ -62,7 +67,8 @@ fun RestaurantImage(restaurant: Pair<String, String>) {
             style = MaterialTheme.typography.h6,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily.SansSerif
         )
     }
 
@@ -80,7 +86,19 @@ fun RestaurantScreen(restaurants: List<Pair<String, String>>) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            label = { Text("Search restaurants") },
+            label = {
+                Text(
+                    text = "Search restaurants",
+                    fontSize = 16.sp
+                )
+            },
+            leadingIcon = {
+                androidx.compose.material3.Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Search,
+                    contentDescription = "Search Icon"
+                )
+            },
+            shape = RoundedCornerShape(19.dp), // פינות מעוגלות יותר
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
