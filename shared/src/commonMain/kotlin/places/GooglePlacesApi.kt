@@ -5,6 +5,10 @@ import io.ktor.client.statement.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
+import places.searchRestaurants
+
 @Serializable
 data class PlacesResponse(val results: List<PlaceResult>)
 
@@ -38,6 +42,7 @@ suspend fun searchRestaurants(): List<Pair<String, String>> {
             parameter("location", "32.0853,34.7818")
             parameter("radius", "1500")
             parameter("type", "restaurant")
+            parameter("language", "en")
             parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
         }
 
@@ -53,4 +58,5 @@ suspend fun searchRestaurants(): List<Pair<String, String>> {
         }
     }
 }
+
 
