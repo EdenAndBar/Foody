@@ -1,6 +1,7 @@
 package org.foody.project
 
 import kotlinx.coroutines.*
+import places.Restaurant
 import kotlin.coroutines.CoroutineContext
 import places.searchRestaurants
 
@@ -11,7 +12,7 @@ class RestaurantApi : CoroutineScope {
     fun testPrint() {
         println("📣 Kotlin function is visible in iOS!")
     }
-    fun getRestaurants(callback: (List<Pair<String, String>>) -> Unit) {
+    fun getRestaurants(callback: (List<Restaurant>) -> Unit) {
         launch {
             try {
                 val results = searchRestaurants()
