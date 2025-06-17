@@ -55,7 +55,10 @@ fun SearchBar(searchQuery: String, onSearchChanged: (String) -> Unit) {
 }
 
 @Composable
-fun RestaurantScreen(restaurants: List<Restaurant>) {
+fun RestaurantScreen(
+    restaurants: List<Restaurant>,
+    onRestaurantClick: (Restaurant) -> Unit // הוספת פרמטר ניווט
+) {
     var searchQuery by remember { mutableStateOf("") }
     var favorites by remember { mutableStateOf(listOf<Restaurant>()) }
 
@@ -66,7 +69,7 @@ fun RestaurantScreen(restaurants: List<Restaurant>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F2F7))  // רקע אפור בהיר בסגנון iOS
+            .background(Color(0xFFF2F2F7))
     ) {
         SearchBar(searchQuery = searchQuery, onSearchChanged = { searchQuery = it })
 
@@ -83,11 +86,12 @@ fun RestaurantScreen(restaurants: List<Restaurant>) {
                         }
                     },
                     onTap = { clickedRestaurant ->
-
+                        onRestaurantClick(clickedRestaurant) // מעביר את הניווט החוצה
                     }
                 )
             }
         }
     }
 }
+
 
