@@ -14,7 +14,7 @@ data class PlaceResult(
     val name: String,
     val photos: List<Photo>? = null,
     val rating: Float? = null,
-    val vicinity: String? = null // ✅ הוספנו כאן את שדה הכתובת/תיאור
+    val vicinity: String? = null
 )
 
 @Serializable
@@ -40,6 +40,7 @@ data class PlaceDetailsResponse(
 @Serializable
 data class PlaceDetailsResult(
     val url: String? = null,
+    val website: String? = null,
     val reviews: List<GoogleReview>? = null
 )
 
@@ -88,7 +89,7 @@ suspend fun searchRestaurants(): List<Restaurant> {
         if (photoReference != null) {
             Restaurant(
                 id = id,
-                placeId = placeId, // ✅ הוספנו את זה
+                placeId = placeId,
                 name = name,
                 photoUrl = buildPhotoUrl(photoReference),
                 address = address,
@@ -106,7 +107,7 @@ suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     val response: HttpResponse =
         client.get("https://maps.googleapis.com/maps/api/place/details/json") {
             parameter("place_id", placeId)
-            parameter("fields", "url,reviews")
+            parameter("fields", "website,url,reviews")
             parameter("language", "en")
             parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
         }

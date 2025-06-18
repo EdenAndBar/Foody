@@ -7,7 +7,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+
 
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Main : BottomNavItem("Main", Icons.Default.Home)
@@ -17,7 +18,10 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
 }
 
 @Composable
-fun MainScreen(restaurants: List<places.Restaurant>) {
+fun MainScreen(
+    restaurants: List<places.Restaurant>,
+    navController: NavHostController
+) {
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
 
     Scaffold(
@@ -41,7 +45,12 @@ fun MainScreen(restaurants: List<places.Restaurant>) {
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (selectedItem) {
-                is BottomNavItem.Main -> RestaurantScreen(restaurants = restaurants)
+                is BottomNavItem.Main -> RestaurantScreen(
+                    restaurants = restaurants,
+                    onRestaurantClick = { restaurant ->
+                        navController.navigate("details/${restaurant.id}")
+                    }
+                )
                 is BottomNavItem.Favorites -> Text("Favorites Screen")
                 is BottomNavItem.Location -> Text("Filter by Location")
                 is BottomNavItem.Category -> Text("Filter by Category")
@@ -49,4 +58,5 @@ fun MainScreen(restaurants: List<places.Restaurant>) {
         }
     }
 }
+
 

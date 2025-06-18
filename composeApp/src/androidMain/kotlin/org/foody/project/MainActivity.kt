@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import androidx.navigation.compose.rememberNavController
 import places.searchRestaurants
 
 class MainActivity : ComponentActivity() {
@@ -20,8 +21,9 @@ class MainActivity : ComponentActivity() {
                 apiResult = result.take(10)
             }
 
-            MainScreen(restaurants = apiResult)
+            val navController = rememberNavController()
 
+            AppNavHost(navController = navController, restaurants = apiResult)
         }
     }
 }
