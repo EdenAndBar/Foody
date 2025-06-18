@@ -6,14 +6,12 @@ struct BottomSheetView: View {
     @Binding var favorites: [Restaurant]
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = RestaurantDetailsViewModel()
-    
-    // ביקורות שנוספו ידנית (לא מה־API)
     @State private var userReviews: [GoogleReviewUI] = []
     @State private var isAddingReview = false
     @State private var newRating: Double = 5.0
     @State private var newText: String = ""
-    @State private var selectedReviewID: UUID? = nil
-    
+    @State private var newAuthor: String = ""
+
     private func toggleFavorite() {
         if let index = favorites.firstIndex(of: restaurant) {
             favorites.remove(at: index)
@@ -26,7 +24,6 @@ struct BottomSheetView: View {
         favorites.contains(restaurant)
     }
 
-    // כל הביקורות: מה-API + מהמשתמש
     var allReviews: [GoogleReviewUI] {
         viewModel.googleReviews.map { GoogleReviewUI(from: $0) } + userReviews
     }
@@ -45,7 +42,6 @@ struct BottomSheetView: View {
             .frame(height: 150)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            // ⭐️ דירוג
             HStack {
                 Image(systemName: "star.fill")
                     .foregroundColor(.yellow)
@@ -53,7 +49,6 @@ struct BottomSheetView: View {
                     .font(.subheadline)
             }
 
-            // 📝 תיאור
             if !restaurant.address.isEmpty {
                 Text(restaurant.address)
                     .font(.body)
@@ -63,80 +58,88 @@ struct BottomSheetView: View {
             }
 
             HStack(spacing: 40) {
-                // ❤️ Favorite
                 VStack {
-                    Button(action: {
-                        toggleFavorite()
-                    }) {
+                    Button(action: { toggleFavorite() }) {
                         Image(systemName: isFavorite ? "heart.fill" : "heart")
                             .font(.system(size: 24))
                             .foregroundColor(.pink)
                     }
-                    Text("Favorite")
-                        .font(.footnote)
-                        .foregroundColor(.pink)
+                    Text("Favorite").font(.footnote).foregroundColor(.pink)
                 }
 
-                // ✍️ Add Review
                 VStack {
-                    Button(action: {
-                        isAddingReview = true
-                    }) {
+                    Button(action: { isAddingReview = true }) {
                         Image(systemName: "pencil")
                             .font(.system(size: 24))
                             .foregroundColor(.green)
                     }
-                    Text("Add review")
-                        .font(.footnote)
-                        .foregroundColor(.green)
+                    Text("Add review").font(.footnote).foregroundColor(.green)
                 }
 
-                // 🌐 Website
                 VStack {
                     Button(action: {
                         if let url = URL(string: viewModel.googleMapsURL) {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        Image(systemName: "safari")
+                        Image(systemName: "map")
                             .font(.system(size: 24))
                             .foregroundColor(.blue)
                     }
-                    Text("Website")
-                        .font(.footnote)
-                        .foregroundColor(.blue)
+                    Text("Maps").font(.footnote).foregroundColor(.blue)
+                }
+
+                VStack {
+                    Button(action: {
+                        if let url = URL(string: viewModel.websiteURL) {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 24))
+                            .foregroundColor(.purple)
+                    }
+                    Text("Website").font(.footnote).foregroundColor(.purple)
                 }
             }
             .padding(.top, 10)
-
-            // ⭐️ הצגת כל הביקורות
+            
             if !allReviews.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(allReviews) { review in
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            HStack {
-                                                Image(systemName: "star.fill")
-                                                    .foregroundColor(.yellow)
-                                                Text(String(format: "%.1f", review.rating))
-                                                    .font(.subheadline)
-                                            }
-
-                                            Text(review.text)
-                                                .font(.footnote)
-                                                .foregroundColor(.gray)
-                                                .lineLimit(3)
-                                                .frame(width: 200, alignment: .leading)
-                                        }
-                                        .padding()
-                                        .background(Color(.systemGray6))
-                                        .cornerRadius(10)
-                                    }
-                    }
+                Text("Reviews")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(allReviews) { review in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "star.fill")
+                                        .foregroundColor(.yellow)
+                                    Text(String(format: "%.1f", review.rating))
+                                        .font(.subheadline)
+                                }
+
+                                Text("by \(review.author)")
+                                    .font(.caption)
+                                    .foregroundColor(Color(.darkGray))
+
+                                Text(review.text)
+                                    .font(.footnote)
+                                    .foregroundColor(.gray)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                        }
+                    }
+                    .padding(.top, 10)
                 }
             }
-
             Spacer()
         }
         .padding()
@@ -151,6 +154,10 @@ struct BottomSheetView: View {
                 Text("Add Your Review")
                     .font(.headline)
 
+                TextField("Your name", text: $newAuthor)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+
                 VStack {
                     Text("Rating: \(Int(newRating))")
                     Slider(value: $newRating, in: 1...5, step: 1)
@@ -163,11 +170,12 @@ struct BottomSheetView: View {
                 Button("Submit") {
                     let newReview = GoogleReviewUI(
                         rating: newRating,
-                        author: "You",
+                        author: newAuthor.isEmpty ? "Anonymous" : newAuthor,
                         text: newText
                     )
                     userReviews.append(newReview)
                     isAddingReview = false
+                    newAuthor = ""
                     newText = ""
                     newRating = 5.0
                 }
@@ -181,4 +189,3 @@ struct BottomSheetView: View {
         }
     }
 }
-
