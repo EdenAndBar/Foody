@@ -35,8 +35,13 @@ fun RestaurantDetailScreen(
     val coroutineScope = rememberCoroutineScope()
     var details by remember { mutableStateOf<PlaceDetailsResult?>(null) }
     val uriHandler = LocalUriHandler.current
-
     var visibleReviewsCount by remember { mutableStateOf(3) }
+
+    // משתנים לניהול ביקורת חדשה
+    var userName by remember { mutableStateOf("") }
+    var userComment by remember { mutableStateOf("") }
+    var userRating by remember { mutableStateOf(0) }
+    val customReviews = remember { mutableStateListOf<GoogleReview>() }
 
     LaunchedEffect(restaurant.placeId) {
         coroutineScope.launch {
@@ -113,7 +118,73 @@ fun RestaurantDetailScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            details?.reviews?.let { reviews ->
+            // שדות הוספת ביקורת
+            Text(
+                text = "Add Your Review",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = userName,
+                onValueChange = { userName = it },
+                label = { Text("Your Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = userComment,
+                onValueChange = { userComment = it },
+                label = { Text("Your Comment") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Your Rating:")
+                Spacer(modifier = Modifier.width(8.dp))
+                (1..5).forEach { star ->
+                    Icon(
+                        imageVector = if (userRating >= star) Icons.Default.Star else Icons.Default.StarBorder,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { userRating = star }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    if (userName.isNotBlank() && userComment.isNotBlank() && userRating > 0) {
+                        val newReview = GoogleReview(
+                            author_name = userName,
+                            rating = userRating,
+                            text = userComment
+                        )
+                        customReviews.add(0, newReview)
+                        userName = ""
+                        userComment = ""
+                        userRating = 0
+                    }
+                },
+                enabled = userName.isNotBlank() && userComment.isNotBlank() && userRating > 0,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Submit Review")
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            val allReviews = customReviews + (details?.reviews ?: emptyList())
+
+            if (allReviews.isNotEmpty()) {
                 Text(
                     text = "Reviews",
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
@@ -121,7 +192,7 @@ fun RestaurantDetailScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                reviews.take(visibleReviewsCount).forEachIndexed { index, review ->
+                allReviews.take(visibleReviewsCount).forEach { review ->
                     AnimatedVisibility(
                         visible = true,
                         enter = fadeIn()
@@ -161,10 +232,10 @@ fun RestaurantDetailScreen(
                     }
                 }
 
-                if (visibleReviewsCount < reviews.size) {
+                if (visibleReviewsCount < allReviews.size) {
                     Button(
                         onClick = {
-                            visibleReviewsCount = minOf(visibleReviewsCount + 3, reviews.size)
+                            visibleReviewsCount = minOf(visibleReviewsCount + 3, allReviews.size)
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF4A4A4A),
