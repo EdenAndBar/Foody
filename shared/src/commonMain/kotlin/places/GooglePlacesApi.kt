@@ -14,7 +14,11 @@ data class PlaceResult(
     val name: String,
     val photos: List<Photo>? = null,
     val rating: Float? = null,
-    val vicinity: String? = null
+    val vicinity: String? = null,
+    val types: List<String>? = null,
+    val opening_hours: OpeningHours? = null,
+    @SerialName("formatted_address")
+    val formattedAddress: String? = null
 )
 
 @Serializable
@@ -29,7 +33,9 @@ data class Restaurant(
     val name: String,
     val photoUrl: String,
     val address: String,
-    val rating: Float
+    val rating: Float,
+    val types: List<String> = emptyList(),
+    val isOpenNow: Boolean? = null
 )
 
 @Serializable
@@ -51,6 +57,10 @@ data class GoogleReview(
     val text: String
 )
 
+@Serializable
+data class OpeningHours(
+    val open_now: Boolean? = null
+)
 
 private val json = Json {
     ignoreUnknownKeys = true
@@ -62,44 +72,104 @@ fun buildPhotoUrl(photoReference: String): String {
             "&photo_reference=$photoReference" +
             "&key=AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0"
 }
+object RestaurantApi {
+    suspend fun searchRestaurants(
+        location: String? = null,
+        city: String? = null
+    ): List<Restaurant> {
+        val client = getHttpClient()
+        val url: String
+        val parameters: Map<String, String>
 
-suspend fun searchRestaurants(): List<Restaurant> {
-    val client = getHttpClient()
+        if (city != null) {
+            url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+            parameters = mapOf("query" to "restaurants in $city")
+        } else if (location != null) {
+            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+            parameters = mapOf(
+                "location" to location,
+                "radius" to "1500",
+                "type" to "restaurant"
+            )
+        } else {
+            return emptyList()
+        }
 
-    val response: HttpResponse =
-        client.get("https://maps.googleapis.com/maps/api/place/nearbysearch/json") {
-            parameter("location", "32.0853,34.7818")
-            parameter("radius", "1500")
-            parameter("type", "restaurant")
+        val response: HttpResponse = client.get(url) {
+            parameters.forEach { (key, value) -> parameter(key, value) }
             parameter("language", "en")
             parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
         }
 
-    val responseBody = response.bodyAsText()
-    val parsed = json.decodeFromString<PlacesResponse>(responseBody)
+        val responseBody = response.bodyAsText()
+        val parsed = json.decodeFromString<PlacesResponse>(responseBody)
 
-    return parsed.results.mapNotNull { place ->
-        val photoReference = place.photos?.firstOrNull()?.photoReference
-        val rating = place.rating ?: 0f
-        val name = place.name
-        val address = "${place.vicinity ?: "No location info"}"
-        val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
-        val placeId = place.place_id
+        return parsed.results.mapNotNull { place ->
+            val photoReference = place.photos?.firstOrNull()?.photoReference
+            val rating = place.rating ?: 0f
+            val name = place.name
+            val address = place.vicinity ?: place.formattedAddress ?: "No location info"
+            val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
+            val placeId = place.place_id
 
-        if (photoReference != null) {
-            Restaurant(
-                id = id,
-                placeId = placeId,
-                name = name,
-                photoUrl = buildPhotoUrl(photoReference),
-                address = address,
-                rating = rating
-            )
-        } else {
-            null
+            if (photoReference != null) {
+                Restaurant(
+                    id = id,
+                    placeId = placeId,
+                    name = name,
+                    photoUrl = buildPhotoUrl(photoReference),
+                    address = address,
+                    rating = rating,
+                    types = place.types ?: emptyList(),
+                    isOpenNow = place.opening_hours?.open_now
+                )
+            } else null
         }
     }
 }
+
+
+//suspend fun searchRestaurants(location: String): List<Restaurant> {
+//    val client = getHttpClient()
+//
+//    val response: HttpResponse =
+//        client.get("https://maps.googleapis.com/maps/api/place/nearbysearch/json") {
+//            parameter("location", location)
+//            parameter("radius", "1500")
+//            parameter("type", "restaurant")
+//            parameter("language", "en")
+//            parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
+//        }
+//
+//    val responseBody = response.bodyAsText()
+//    val parsed = json.decodeFromString<PlacesResponse>(responseBody)
+//
+//    return parsed.results.mapNotNull { place ->
+//        val photoReference = place.photos?.firstOrNull()?.photoReference
+//        val rating = place.rating ?: 0f
+//        val name = place.name
+//        val address = "${place.vicinity ?: "No location info"}"
+//        val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
+//        val placeId = place.place_id
+//        val types = place.types ?: emptyList()
+//        val isOpenNow = place.opening_hours?.open_now
+//
+//        if (photoReference != null) {
+//            Restaurant(
+//                id = id,
+//                placeId = placeId,
+//                name = name,
+//                photoUrl = buildPhotoUrl(photoReference),
+//                address = address,
+//                rating = rating,
+//                types = types,
+//                isOpenNow = isOpenNow
+//            )
+//        } else {
+//            null
+//        }
+//    }
+//}
 
 suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     val client = getHttpClient()
@@ -116,5 +186,44 @@ suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     val parsed = json.decodeFromString<PlaceDetailsResponse>(body)
     return parsed.result
 }
+
+//suspend fun searchRestaurantsByCity(city: String): List<Restaurant> {
+//    val client = getHttpClient()
+//
+//    val response: HttpResponse =
+//        client.get("https://maps.googleapis.com/maps/api/place/textsearch/json") {
+//            parameter("query", "restaurants in $city")
+//            parameter("language", "en")
+//            parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
+//        }
+//
+//    val responseBody = response.bodyAsText()
+//    val parsed = json.decodeFromString<PlacesResponse>(responseBody)
+//
+//    return parsed.results.mapNotNull { place ->
+//        val photoReference = place.photos?.firstOrNull()?.photoReference
+//        val rating = place.rating ?: 0f
+//        val name = place.name
+//        val address = "${place.vicinity ?: "No location info"}"
+//        val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
+//        val placeId = place.place_id
+//
+//        if (photoReference != null) {
+//            Restaurant(
+//                id = id,
+//                placeId = placeId,
+//                name = name,
+//                photoUrl = buildPhotoUrl(photoReference),
+//                address = address,
+//                rating = rating,
+//                types = place.types ?: emptyList(),
+//                isOpenNow = place.opening_hours?.open_now
+//            )
+//        } else {
+//            null
+//        }
+//    }
+//}
+
 
 

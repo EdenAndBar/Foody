@@ -113,7 +113,7 @@ struct BottomSheetView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         ForEach(allReviews) { review in
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 16) {
                                 HStack {
                                     Image(systemName: "star.fill")
                                         .foregroundColor(.yellow)
@@ -129,9 +129,10 @@ struct BottomSheetView: View {
                                     .font(.footnote)
                                     .foregroundColor(.gray)
                                     .fixedSize(horizontal: false, vertical: true)
+                                    .multilineTextAlignment(.leading)
                             }
                             .padding()
-                            .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color(.systemGray6))
                             .cornerRadius(10)
                             .padding(.horizontal)

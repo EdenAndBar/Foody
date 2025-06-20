@@ -9,6 +9,7 @@ struct RestaurantListView: View {
     @State private var searchText = ""
     @State private var selectedRestaurant: Restaurant? = nil
     @State private var showingSheet = false
+    var showSearchBar: Bool = true
 
     private var filtered: [Restaurant] {
         if searchText.isEmpty {
@@ -35,7 +36,8 @@ struct RestaurantListView: View {
                         name: restaurant.name,
                         photoUrl: restaurant.photoUrl,
                         address: restaurant.address,
-                        rating: restaurant.rating
+                        rating: restaurant.rating,
+                        isOpenNow: restaurant.isOpenNow?.boolValue
                     )
                     .onTapGesture {
                         onTap(restaurant)
@@ -69,17 +71,25 @@ struct RestaurantListView: View {
 
 
     private var searchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+        Group {
+            if showSearchBar {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
 
-            TextField("Search restaurants...", text: $searchText)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
+                    TextField("Search restaurants...", text: $searchText)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                }
+                .padding(10)
+                .background(Color(UIColor { trait in
+                    trait.userInterfaceStyle == .dark ? .darkGray : .systemGray6
+                }))
+                .cornerRadius(20)
+                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 3)
+                .padding(.horizontal)
+            }
         }
-        .padding(10)
-        .background(Color(.systemGray5))
-        .cornerRadius(10)
-        .padding(.horizontal)
     }
+
 }

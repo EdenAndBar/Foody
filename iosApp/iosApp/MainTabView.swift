@@ -16,7 +16,7 @@ struct MainTabView: View {
                                 Image(systemName: "heart.fill")
                                 Text("Favorites")
                             }
-            LocationView()
+            LocationSearchView(favorites: $favorites)
                 .tabItem {
                     Image(systemName: "mappin.and.ellipse")
                     Text("Location")
@@ -28,12 +28,6 @@ struct MainTabView: View {
                     Text("Category")
                 }
         }
-    }
-}
-
-struct LocationView: View {
-    var body: some View {
-        Text("Location screen coming soon")
     }
 }
 

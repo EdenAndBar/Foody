@@ -1,46 +1,68 @@
 import SwiftUI
 import Shared
+import CoreLocation
 
 struct ContentView: View {
     @State private var restaurants: [Restaurant] = []
     @Binding var favorites: [Restaurant]
     @State private var selectedRestaurantId: String? = nil
     @State private var path = NavigationPath()
+    @StateObject private var locationManager = LocationManager()
+    @State private var hasLoadedRestaurants = false
 
     var body: some View {
         NavigationStack(path: $path) {
             VStack {
+                HStack {
+                    Spacer()
+                    if hasLoadedRestaurants && locationManager.location != nil {
+                        Button(action: {
+                            locationManager.refreshLocation()
+                        }) {
+                            Label("Refresh location", systemImage: "location.circle")
+                        }
+                        .padding(.trailing)
+                    }
+                }
+                
                 if restaurants.isEmpty {
-                    ProgressView("Loading restaurants...")
-                        .onAppear { loadRestaurants() }
+                    ProgressView("Looking for restaurants near you...")
                 } else {
                     RestaurantListView(
                         restaurants: restaurants,
                         favorites: $favorites,
                         onTap: { restaurant in
-                            path.append(restaurant.placeId)
+                            path.append(restaurant)
                         }
                     )
                 }
             }
-            // ✅ שימי לב שזה חלק מתוך NavigationStack – לא מחוץ לו!
-            .navigationDestination(for: String.self) { placeId in
-                if let restaurant = restaurants.first(where: { $0.placeId == placeId }) {
-                    BottomSheetView(
-                        restaurant: restaurant,
-                        favorites: $favorites
-                    )
-                } else {
-                    Text("Restaurant not found")
-                }
+            .navigationDestination(for: Restaurant.self) { restaurant in
+                BottomSheetView(restaurant: restaurant, favorites: $favorites)
+            }
+        }
+        .onReceive(locationManager.$location.compactMap { $0 }) { coordinate in
+            print("📍 Got location update: \(coordinate.latitude), \(coordinate.longitude)")
+            let latLng = "\(coordinate.latitude),\(coordinate.longitude)"
+            loadNearbyRestaurants(location: latLng)
+        }
+        .onAppear {
+            if locationManager.location == nil {
+                locationManager.refreshLocation()
             }
         }
     }
 
-    private func loadRestaurants() {
+    private func loadNearbyRestaurants(location: String) {
+        print("🍽 Loading restaurants for location: \(location)")
         let api = RestaurantApi()
-        api.getRestaurants { results in
+        api.getRestaurants(location: location) { results in
+            print("✅ Received \(results.count) restaurants")
             self.restaurants = results
+            self.hasLoadedRestaurants = true
         }
     }
+
 }
+
+
