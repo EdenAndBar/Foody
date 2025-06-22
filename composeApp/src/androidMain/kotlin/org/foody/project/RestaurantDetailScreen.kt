@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import places.*
+import androidx.compose.ui.text.font.FontWeight
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,6 +117,74 @@ fun RestaurantDetailScreen(
             }
 
             InfoRow(icon = Icons.Default.Star, label = "Rating: ${restaurant.rating}")
+
+            Spacer(modifier = Modifier.height(11.dp))
+
+            val currentDetails = details
+            val openingHoursText = currentDetails?.opening_hours?.weekdayText
+            val isOpenNow = currentDetails?.opening_hours?.open_now
+
+            if (openingHoursText != null && openingHoursText.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = null,
+                        tint = Color(0xFF4A4A4A),
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "Opening Hours - ",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                        color = Color.Black
+                    )
+                    if (isOpenNow != null) {
+                        Text(
+                            text = if (isOpenNow) "OPEN NOW" else "CLOSED",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                            color = if (isOpenNow) Color(0xFF66BB6A) else Color(0xFFF44336),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 2.dp,
+                    color = Color.White
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        openingHoursText.forEach { line ->
+                            val parts = line.split(": ", limit = 2)
+                            val dayPart = parts.getOrNull(0) ?: line
+                            val hoursPart = parts.getOrNull(1) ?: ""
+
+                            Row {
+                                Text(
+                                    text = "$dayPart: ",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 15.sp),
+                                    color = Color.DarkGray,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = hoursPart,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 15.sp),
+                                    color = Color.DarkGray
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
+                }
+            }
+
 
             Spacer(modifier = Modifier.height(20.dp))
 

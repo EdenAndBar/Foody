@@ -35,7 +35,8 @@ data class Restaurant(
     val address: String,
     val rating: Float,
     val types: List<String> = emptyList(),
-    val isOpenNow: Boolean? = null
+    val isOpenNow: Boolean? = null,
+    val openingHoursText: List<String>? = null
 )
 
 @Serializable
@@ -47,7 +48,8 @@ data class PlaceDetailsResponse(
 data class PlaceDetailsResult(
     val url: String? = null,
     val website: String? = null,
-    val reviews: List<GoogleReview>? = null
+    val reviews: List<GoogleReview>? = null,
+    val opening_hours: OpeningHours? = null
 )
 
 @Serializable
@@ -59,7 +61,9 @@ data class GoogleReview(
 
 @Serializable
 data class OpeningHours(
-    val open_now: Boolean? = null
+    val open_now: Boolean? = null,
+    @SerialName("weekday_text")
+    val weekdayText: List<String>? = null
 )
 
 private val json = Json {
@@ -102,6 +106,7 @@ object RestaurantApi {
         }
 
         val responseBody = response.bodyAsText()
+        println("📦 JSON תגובת ה־API: $responseBody")
         val parsed = json.decodeFromString<PlacesResponse>(responseBody)
 
         return parsed.results.mapNotNull { place ->
@@ -112,6 +117,8 @@ object RestaurantApi {
             val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
             val placeId = place.place_id
 
+            val details = getRestaurantDetails(placeId)
+
             if (photoReference != null) {
                 Restaurant(
                     id = id,
@@ -121,7 +128,9 @@ object RestaurantApi {
                     address = address,
                     rating = rating,
                     types = place.types ?: emptyList(),
-                    isOpenNow = place.opening_hours?.open_now
+                    isOpenNow = place.opening_hours?.open_now,
+                    openingHoursText = details?.opening_hours?.weekdayText
+
                 )
             } else null
         }
@@ -177,7 +186,7 @@ suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     val response: HttpResponse =
         client.get("https://maps.googleapis.com/maps/api/place/details/json") {
             parameter("place_id", placeId)
-            parameter("fields", "website,url,reviews")
+            parameter("fields", "website,url,reviews,opening_hours")
             parameter("language", "en")
             parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
         }
