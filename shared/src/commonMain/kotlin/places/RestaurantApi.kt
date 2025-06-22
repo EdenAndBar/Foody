@@ -32,17 +32,17 @@ class RestaurantApi : CoroutineScope {
             }
         }
     }
-
-    fun getNearbyRestaurants(location: String, callback: (List<Restaurant>) -> Unit) {
-        launch {
-            try {
-                val results = RestaurantApi.searchRestaurants(location = location)
-                callback(results)
-            } catch (e: Exception) {
-                callback(emptyList())
-            }
-        }
-    }
+//
+//    fun getNearbyRestaurants(location: String, callback: (List<Restaurant>) -> Unit) {
+//        launch {
+//            try {
+//                val results = RestaurantApi.searchRestaurants(location = location)
+//                callback(results)
+//            } catch (e: Exception) {
+//                callback(emptyList())
+//            }
+//        }
+//    }
 
     fun getRestaurantDetails(placeId: String, callback: (PlaceDetailsResult?) -> Unit) {
         launch {

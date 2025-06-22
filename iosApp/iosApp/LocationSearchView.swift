@@ -4,6 +4,7 @@ import Shared
 struct LocationSearchView: View {
     @State private var cityText = ""
     @State private var nameText = ""
+    @State private var searchText = ""
     @State private var allRestaurants: [Restaurant] = []
     @State private var filteredRestaurants: [Restaurant] = []
     @Binding var favorites: [Restaurant]
@@ -36,6 +37,7 @@ struct LocationSearchView: View {
                     RestaurantListView(
                         restaurants: filteredRestaurants,
                         favorites: $favorites,
+                        searchText: $searchText,
                         onTap: { selected in
                             path.append(selected)
                         },
@@ -73,6 +75,12 @@ struct LocationSearchView: View {
     }
 
     private func searchByCity() {
+        guard !cityText.trimmingCharacters(in: .whitespaces).isEmpty else {
+            self.allRestaurants = []
+            self.filteredRestaurants = []
+            return
+        }
+
         let api = RestaurantApi()
         api.getRestaurants(city: cityText) { results in
             DispatchQueue.main.async {
@@ -80,7 +88,9 @@ struct LocationSearchView: View {
                 self.filterByName()
             }
         }
+
     }
+
 
     private func filterByName() {
         if nameText.isEmpty {

@@ -1,6 +1,12 @@
 import SwiftUI
 import Shared
 
+extension KotlinBoolean {
+    open override var boolValue: Bool {
+        return self == KotlinBoolean(bool: true)
+    }
+}
+
 struct BottomSheetView: View {
     let restaurant: Restaurant
     @Binding var favorites: [Restaurant]
@@ -33,7 +39,17 @@ struct BottomSheetView: View {
             Text(restaurant.name)
                 .font(.title2)
                 .bold()
+            
+            let isOpen = restaurant.isOpenNow?.boolValue ?? false
 
+            Text(isOpen ? "Open Now" : "Closed")
+                .padding(6)
+                .background(isOpen ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                .foregroundColor(isOpen ? .green : .red)
+                .cornerRadius(8)
+                .font(.subheadline)
+                .bold()
+            
             AsyncImage(url: URL(string: restaurant.photoUrl)) { image in
                 image.resizable().scaledToFill()
             } placeholder: {
