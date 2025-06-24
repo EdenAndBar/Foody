@@ -76,32 +76,43 @@ fun buildPhotoUrl(photoReference: String): String {
             "&photo_reference=$photoReference" +
             "&key=AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0"
 }
+
 object RestaurantApi {
     suspend fun searchRestaurants(
         location: String? = null,
-        city: String? = null
+        city: String? = null,
+        query: String? = null
     ): List<Restaurant> {
         val client = getHttpClient()
         val url: String
-        val parameters: Map<String, String>
+        val parameters: MutableMap<String, String> = mutableMapOf()
 
-        if (city != null) {
-            url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-            parameters = mapOf("query" to "restaurants in $city")
-        } else if (location != null) {
-            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-            parameters = mapOf(
-                "location" to location,
-                "radius" to "1500",
-                "type" to "restaurant"
-            )
-        } else {
-            return emptyList()
+        when {
+            query != null -> {
+                url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+                // ✅ נשתמש ב-"named" כדי לרמוז על חיפוש לפי שם ולא קטגוריה
+                parameters["query"] = "named $query restaurant in Israel"
+                parameters["type"] = "restaurant"
+            }
+            city != null -> {
+                url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+                parameters["query"] = "restaurants in $city"
+            }
+            location != null -> {
+                url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                parameters["location"] = location
+                parameters["radius"] = "1500"
+                parameters["type"] = "restaurant"
+            }
+            else -> {
+                return emptyList()
+            }
         }
 
         val response: HttpResponse = client.get(url) {
             parameters.forEach { (key, value) -> parameter(key, value) }
             parameter("language", "en")
+            parameter("region", "il") // ✅ מגביל את התוצאות לישראל
             parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
         }
 
@@ -114,13 +125,13 @@ object RestaurantApi {
             val rating = place.rating ?: 0f
             val name = place.name
             val address = place.vicinity ?: place.formattedAddress ?: "No location info"
-            val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
+            val id = "restaurant-${name.hashCode()}-${photoReference?.hashCode() ?: 0}"
             val placeId = place.place_id
 
             val details = getRestaurantDetails(placeId)
 
             if (photoReference != null) {
-                Restaurant(
+                val restaurant = Restaurant(
                     id = id,
                     placeId = placeId,
                     name = name,
@@ -130,12 +141,19 @@ object RestaurantApi {
                     types = place.types ?: emptyList(),
                     isOpenNow = place.opening_hours?.open_now,
                     openingHoursText = details?.opening_hours?.weekdayText
-
                 )
+                // ✅ פילטר נוסף על שם (כדי שלא יופיעו תוצאות רנדומליות אם API לא דייק)
+                if (query == null || restaurant.name.contains(query, ignoreCase = true)) {
+                    restaurant
+                } else null
             } else null
+        }.filter { restaurant ->
+            restaurant.types.contains("restaurant")
         }
     }
 }
+
+
 
 
 //suspend fun searchRestaurants(location: String): List<Restaurant> {

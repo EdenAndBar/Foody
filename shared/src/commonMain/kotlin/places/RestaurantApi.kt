@@ -55,4 +55,15 @@ class RestaurantApi : CoroutineScope {
         }
     }
 
+    fun getRestaurantsByName(name: String, callback: (List<Restaurant>) -> Unit) {
+        launch {
+            try {
+                val results = places.RestaurantApi.searchRestaurants(query = name)
+                callback(results)
+            } catch (e: Exception) {
+                callback(emptyList())
+            }
+        }
+    }
+
 }
