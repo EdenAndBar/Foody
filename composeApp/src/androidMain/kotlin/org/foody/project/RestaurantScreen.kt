@@ -81,7 +81,7 @@ fun RestaurantScreen(
     var searchResults by remember { mutableStateOf<List<Restaurant>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
 
-    val api = remember { org.foody.project.RestaurantApi() }
+    val api = remember { org.foody.project.RestaurantApiService() }
     val coroutineScope = rememberCoroutineScope()
 
     fun performSearch() {

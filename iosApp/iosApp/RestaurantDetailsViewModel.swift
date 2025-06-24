@@ -9,7 +9,7 @@ class RestaurantDetailsViewModel: ObservableObject {
     @Published var websiteURL: String = ""
 
     func fetchDetails(for placeId: String) async {
-        let api = Shared.RestaurantApi()
+        let api = RestaurantApiService()
         api.getRestaurantDetails(placeId: placeId) { details in
             if let details = details {
                 self.googleReviews = details.reviews ?? []

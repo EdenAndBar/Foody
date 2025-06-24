@@ -5,16 +5,16 @@ import places.Restaurant
 import kotlin.coroutines.CoroutineContext
 import places.PlaceDetailsResult
 import kotlinx.coroutines.Dispatchers
-import places.RestaurantApi
 import places.getRestaurantDetails
+import places.RestaurantApi as PlacesApi
 
-class RestaurantApi : CoroutineScope {
+class RestaurantApiService : CoroutineScope {
     private val job = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.Main + job
     fun getRestaurants(location: String, callback: (List<Restaurant>) -> Unit) {
         launch {
             try {
-                val results = RestaurantApi.searchRestaurants(location = location)
+                val results = PlacesApi.searchRestaurants(location = location)
                 callback(results)
             } catch (e: Exception) {
                 callback(emptyList())
@@ -25,7 +25,7 @@ class RestaurantApi : CoroutineScope {
     fun getRestaurantsByCity(city: String, callback: (List<Restaurant>) -> Unit) {
         launch {
             try {
-                val results = RestaurantApi.searchRestaurants(city = city)
+                val results = PlacesApi.searchRestaurants(city = city)
                 callback(results)
             } catch (e: Exception) {
                 callback(emptyList())
@@ -58,7 +58,7 @@ class RestaurantApi : CoroutineScope {
     fun getRestaurantsByName(name: String, callback: (List<Restaurant>) -> Unit) {
         launch {
             try {
-                val results = places.RestaurantApi.searchRestaurants(query = name)
+                val results = PlacesApi.searchRestaurants(query = name)
                 callback(results)
             } catch (e: Exception) {
                 callback(emptyList())

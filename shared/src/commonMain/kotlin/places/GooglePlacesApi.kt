@@ -90,7 +90,6 @@ object RestaurantApi {
         when {
             query != null -> {
                 url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-                // ✅ נשתמש ב-"named" כדי לרמוז על חיפוש לפי שם ולא קטגוריה
                 parameters["query"] = "named $query restaurant in Israel"
                 parameters["type"] = "restaurant"
             }
@@ -101,7 +100,7 @@ object RestaurantApi {
             location != null -> {
                 url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
                 parameters["location"] = location
-                parameters["radius"] = "1500"
+                parameters["radius"] = "5000"
                 parameters["type"] = "restaurant"
             }
             else -> {
