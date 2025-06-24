@@ -21,7 +21,7 @@ struct ContentView: View {
             VStack {
                 HStack {
                     Spacer()
-                    if hasLoadedRestaurants && locationManager.location != nil && !isSearchMode {
+                    if hasLoadedRestaurants && restaurants.count > 0 && locationManager.location != nil && !isSearchMode {
                         Button(action: {
                             locationManager.refreshLocation()
                         }) {
@@ -40,6 +40,7 @@ struct ContentView: View {
                                 
                                 Button(action: {
                                     searchText = ""
+                                    restaurants = []
                                     if let coordinate = locationManager.location {
                                         let latLng = "\(coordinate.latitude),\(coordinate.longitude)"
                                         loadNearbyRestaurants(location: latLng)
@@ -47,7 +48,6 @@ struct ContentView: View {
                                 }) {
                                     Text("Back to main")
                                         .foregroundColor(.blue)
-                                        .underline()
                                 }
                             }
                             .padding(.top, 50)

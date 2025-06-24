@@ -54,9 +54,15 @@ struct RestaurantListView: View {
 
                 if restaurants.isEmpty {
                     Spacer()
-                    Text("No restaurants found for \"\(searchText)\"")
-                        .foregroundColor(.gray)
-                        .padding(.top, 50)
+                    if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Text("No restaurants found for \"\(searchText)\"")
+                            .foregroundColor(.gray)
+                            .padding(.top, 50)
+                    } else {
+                        Text("No favorite restaurants yet")
+                            .foregroundColor(.gray)
+                            .padding(.top, 50)
+                    }
                 }
             }
             .padding()
