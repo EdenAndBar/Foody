@@ -15,16 +15,8 @@ struct LocationSearchView: View {
             VStack(spacing: 12) {
                 // שדות חיפוש מעוצבים עם אייקונים
                 HStack(spacing: 12) {
-                    searchField(
-                        systemImage: "building.2.crop.circle",
-                        placeholder: "Enter city...",
-                        text: $cityText
-                    )
-                    searchField(
-                        systemImage: "fork.knife.circle",
-                        placeholder: "Restaurant name",
-                        text: $nameText
-                    )
+                    searchFieldStyled(systemImage: "building.2.crop.circle", placeholder: "Enter city...", text: $cityText)
+                    searchFieldStyled(systemImage: "fork.knife.circle", placeholder: "Restaurant name", text: $nameText)
                 }
                 .padding(.horizontal)
 
@@ -57,39 +49,61 @@ struct LocationSearchView: View {
         }
     }
 
-    private func searchField(systemImage: String, placeholder: String, text: Binding<String>) -> some View {
+    private func searchFieldStyled(systemImage: String, placeholder: String, text: Binding<String>) -> some View {
         HStack {
             Image(systemName: systemImage)
-                .foregroundColor(.gray)
+                .foregroundColor(Color(.systemGray))
             TextField(placeholder, text: text)
+                .foregroundColor(.primary)
+                .font(.subheadline)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
         }
         .padding(12)
         .background(Color(.systemGray6))
         .cornerRadius(20)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color(.systemGray4), lineWidth: 0.8)
-        )
+        .shadow(color: Color(.black).opacity(0.05), radius: 3, x: 0, y: 2)
     }
 
+
     private func searchByCity() {
-        guard !cityText.trimmingCharacters(in: .whitespaces).isEmpty else {
+        let trimmedCity = cityText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedCity.isEmpty else {
             self.allRestaurants = []
             self.filteredRestaurants = []
             return
         }
 
         let api = RestaurantApi()
-        api.getRestaurants(city: cityText) { results in
+        api.getRestaurants(city: trimmedCity) { results in
             DispatchQueue.main.async {
-                self.allRestaurants = results
+                // ✅ סינון לפי כתובת המסעדה (ולא לפי השם)
+                let cityLower = trimmedCity.lowercased()
+                self.allRestaurants = results.filter {
+                    $0.address.lowercased().contains(cityLower)
+                }
                 self.filterByName()
             }
         }
-
     }
+
+
+//    private func searchByCity() {
+//        guard !cityText.trimmingCharacters(in: .whitespaces).isEmpty else {
+//            self.allRestaurants = []
+//            self.filteredRestaurants = []
+//            return
+//        }
+//
+//        let api = RestaurantApi()
+//        api.getRestaurants(city: cityText) { results in
+//            DispatchQueue.main.async {
+//                self.allRestaurants = results
+//                self.filterByName()
+//            }
+//        }
+//
+//    }
 
 
     private func filterByName() {
