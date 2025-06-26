@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import places.Restaurant
+import androidx.compose.ui.unit.sp
+
 
 @Composable
 fun SearchBar(
@@ -40,7 +42,7 @@ fun SearchBar(
                 Text(
                     "Search restaurants...",
                     color = Color.Black.copy(alpha = 0.5f),
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                    fontSize = 15.sp
                 )
             },
             modifier = Modifier
@@ -49,6 +51,10 @@ fun SearchBar(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
                 cursorColor = Color.DarkGray,
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black
