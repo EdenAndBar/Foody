@@ -76,7 +76,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            AppNavHost(navController = navController, restaurants = apiResult)
+            AppNavHost(
+                navController = navController,
+                restaurants = apiResult,
+                onNewSearchResults = { updatedList ->
+                    apiResult = updatedList
+                }
+            )
+
         }
     }
 

@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import places.Restaurant
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+
 
 
 @Composable
@@ -80,7 +82,9 @@ fun SearchBar(
 @Composable
 fun RestaurantScreen(
     restaurants: List<Restaurant>,
-    onRestaurantClick: (Restaurant) -> Unit
+    navController: NavHostController,
+    onRestaurantClick: (Restaurant) -> Unit,
+    onNewSearchResults: (List<Restaurant>) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var favorites by remember { mutableStateOf(listOf<Restaurant>()) }
@@ -96,11 +100,13 @@ fun RestaurantScreen(
             coroutineScope.launch {
                 api.getRestaurantsByName(searchQuery) { results ->
                     searchResults = results
+                    onNewSearchResults(results) // ⬅️ זה מה שמעדכן את הרשימה הכללית
                     isLoading = false
                 }
             }
         } else {
             searchResults = emptyList()
+            onNewSearchResults(restaurants)
         }
     }
 

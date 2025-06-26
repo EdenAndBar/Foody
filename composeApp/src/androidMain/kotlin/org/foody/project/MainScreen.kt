@@ -8,8 +8,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
+import places.Restaurant
 
-
+// 🧭 סעיפי תפריט תחתון
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Main : BottomNavItem("Main", Icons.Default.Home)
     object Favorites : BottomNavItem("Favorites", Icons.Default.Favorite)
@@ -20,9 +21,11 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
 @Composable
 fun MainScreen(
     restaurants: List<places.Restaurant>,
-    navController: NavHostController
+    navController: NavHostController,
+    onNewSearchResults: (List<places.Restaurant>) -> Unit
 ) {
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
+    var allRestaurants by remember { mutableStateOf(restaurants) }
 
     Scaffold(
         bottomBar = {
@@ -47,16 +50,27 @@ fun MainScreen(
             when (selectedItem) {
                 is BottomNavItem.Main -> RestaurantScreen(
                     restaurants = restaurants,
+                    navController = navController,
                     onRestaurantClick = { restaurant ->
                         navController.navigate("details/${restaurant.id}")
+                    },
+                    onNewSearchResults = { results ->
+                        onNewSearchResults(results)
                     }
                 )
-                is BottomNavItem.Favorites -> Text("Favorites Screen")
-                is BottomNavItem.Location -> Text("Filter by Location")
-                is BottomNavItem.Category -> Text("Filter by Category")
+                is BottomNavItem.Favorites -> {
+                    // ניתן להחליף את Text במסך אמיתי בהמשך
+                    Text("Favorites Screen")
+                }
+                is BottomNavItem.Location -> {
+                    Text("Filter by Location")
+                }
+                is BottomNavItem.Category -> {
+                    Text("Filter by Category")
+                }
             }
+
+
         }
     }
 }
-
-
