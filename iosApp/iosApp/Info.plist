@@ -8,5 +8,18 @@
 	<string>We need your location to show nearby restaurants.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>GIDClientID</key>
+	<string>250508128428-f0tbik63rhdifc973emg07ulbvenmc52.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.250508128428-f0tbik63rhdifc973emg07ulbvenmc52</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photos to let you upload a profile picture.</string>
 </dict>
 </plist>
