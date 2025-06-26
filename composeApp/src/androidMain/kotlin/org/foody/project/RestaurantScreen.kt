@@ -18,14 +18,15 @@ import kotlinx.coroutines.launch
 import places.Restaurant
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-
+import androidx.compose.material.icons.filled.*
 
 
 @Composable
 fun SearchBar(
     searchQuery: String,
     onSearchChanged: (String) -> Unit,
-    onSearchSubmit: () -> Unit
+    onSearchSubmit: () -> Unit,
+    onClearClick: () -> Unit  // הוספתי callback לניקוי
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -37,6 +38,22 @@ fun SearchBar(
             .background(Color(0xFFE0E0E5), RoundedCornerShape(12.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // כפתור ניקוי (הופיע רק אם יש טקסט)
+        if (searchQuery.isNotEmpty()) {
+            IconButton(onClick = {
+                onClearClick()
+                keyboardController?.hide()
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Clear search",
+                    tint = Color.DarkGray
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.width(8.dp)) // ריווח כשהכפתור לא מופיע
+        }
+
         TextField(
             value = searchQuery,
             onValueChange = onSearchChanged,
@@ -61,8 +78,10 @@ fun SearchBar(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black
             ),
-            singleLine = true
+            singleLine = true,
+            // אפשר גם להוסיף onImeAction להקשת אנטר למשל אם תרצי
         )
+
         IconButton(
             onClick = {
                 keyboardController?.hide()
@@ -84,7 +103,8 @@ fun RestaurantScreen(
     restaurants: List<Restaurant>,
     navController: NavHostController,
     onRestaurantClick: (Restaurant) -> Unit,
-    onNewSearchResults: (List<Restaurant>) -> Unit
+    onNewSearchResults: (List<Restaurant>) -> Unit,
+    originalRestaurants: List<Restaurant>
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var favorites by remember { mutableStateOf(listOf<Restaurant>()) }
@@ -100,7 +120,7 @@ fun RestaurantScreen(
             coroutineScope.launch {
                 api.getRestaurantsByName(searchQuery) { results ->
                     searchResults = results
-                    onNewSearchResults(results) // ⬅️ זה מה שמעדכן את הרשימה הכללית
+                    onNewSearchResults(results)
                     isLoading = false
                 }
             }
@@ -118,8 +138,38 @@ fun RestaurantScreen(
         SearchBar(
             searchQuery = searchQuery,
             onSearchChanged = { searchQuery = it },
-            onSearchSubmit = { performSearch() }
+            onSearchSubmit = { performSearch() },
+            onClearClick = {
+                searchQuery = ""
+                searchResults = emptyList()
+                onNewSearchResults(originalRestaurants)
+            }
         )
+
+        if (searchResults.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        searchQuery = ""
+                        searchResults = emptyList()
+                        onNewSearchResults(originalRestaurants)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
+                }
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(text = "Back", fontSize = 16.sp)
+            }
+        }
 
         if (isLoading) {
             Box(

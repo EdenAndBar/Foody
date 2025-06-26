@@ -10,20 +10,21 @@ import places.Restaurant
 fun AppNavHost(
     navController: NavHostController,
     restaurants: List<Restaurant>,
-    onNewSearchResults: (List<Restaurant>) -> Unit
+    onNewSearchResults: (List<Restaurant>) -> Unit,
+    originalRestaurants: List<Restaurant>
 ) {
     NavHost(navController = navController, startDestination = "list") {
         composable("list") {
             MainScreen(
                 restaurants = restaurants,
                 navController = navController,
-                onNewSearchResults = onNewSearchResults
+                onNewSearchResults = onNewSearchResults,
+                originalRestaurants = originalRestaurants
             )
         }
         composable("details/{restaurantId}") { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getString("restaurantId")
-            val allRestaurants = restaurants // או מאיפה שאת שומרת את הרשימה
-            val restaurant = allRestaurants.find { it.id == restaurantId }
+            val restaurant = restaurants.find { it.id == restaurantId }
             restaurant?.let {
                 RestaurantDetailScreen(
                     restaurant = it,
@@ -33,6 +34,7 @@ fun AppNavHost(
         }
     }
 }
+
 
 
 

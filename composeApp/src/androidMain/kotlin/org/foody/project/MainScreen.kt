@@ -1,16 +1,22 @@
 package org.foody.project
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 import places.Restaurant
+import places.RestaurantApi
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-// 🧭 סעיפי תפריט תחתון
+
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Main : BottomNavItem("Main", Icons.Default.Home)
     object Favorites : BottomNavItem("Favorites", Icons.Default.Favorite)
@@ -20,12 +26,12 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
 
 @Composable
 fun MainScreen(
-    restaurants: List<places.Restaurant>,
+    restaurants: List<Restaurant>,
     navController: NavHostController,
-    onNewSearchResults: (List<places.Restaurant>) -> Unit
+    onNewSearchResults: (List<Restaurant>) -> Unit,
+    originalRestaurants: List<Restaurant>
 ) {
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
-    var allRestaurants by remember { mutableStateOf(restaurants) }
 
     Scaffold(
         bottomBar = {
@@ -40,37 +46,40 @@ fun MainScreen(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         label = { Text(item.label) },
                         selected = selectedItem == item,
-                        onClick = { selectedItem = item }
+                        onClick = {
+                            selectedItem = item
+                            if (item == BottomNavItem.Main) {
+                                onNewSearchResults(originalRestaurants)  // איפוס לתצוגה המקורית
+                            }
+                        }
                     )
                 }
             }
         }
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedItem) {
-                is BottomNavItem.Main -> RestaurantScreen(
-                    restaurants = restaurants,
-                    navController = navController,
-                    onRestaurantClick = { restaurant ->
-                        navController.navigate("details/${restaurant.id}")
-                    },
-                    onNewSearchResults = { results ->
-                        onNewSearchResults(results)
-                    }
-                )
+                is BottomNavItem.Main -> {
+                    RestaurantScreen(
+                        restaurants = restaurants,
+                        navController = navController,
+                        onRestaurantClick = { clickedRestaurant ->
+                            navController.navigate("details/${clickedRestaurant.id}")
+                        },
+                        onNewSearchResults = onNewSearchResults,
+                        originalRestaurants = originalRestaurants
+                    )
+                }
                 is BottomNavItem.Favorites -> {
-                    // ניתן להחליף את Text במסך אמיתי בהמשך
-                    Text("Favorites Screen")
+                    Text("Favorites Screen", modifier = Modifier.fillMaxSize())
                 }
                 is BottomNavItem.Location -> {
-                    Text("Filter by Location")
+                    Text("Filter by Location", modifier = Modifier.fillMaxSize())
                 }
                 is BottomNavItem.Category -> {
-                    Text("Filter by Category")
+                    Text("Filter by Category", modifier = Modifier.fillMaxSize())
                 }
             }
-
-
         }
     }
 }

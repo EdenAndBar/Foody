@@ -27,7 +27,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
-            var apiResult by remember { mutableStateOf<List<Restaurant>>(emptyList()) }
+            var originalRestaurants by remember { mutableStateOf<List<Restaurant>>(emptyList()) }
+            var apiResult by remember { mutableStateOf<List<Restaurant>>(emptyList()) } // רשימת תצוגה שמתעדכנת בחיפוש
             val navController = rememberNavController()
             val coroutineScope = rememberCoroutineScope()
 
@@ -39,16 +40,11 @@ class MainActivity : ComponentActivity() {
                             val location = getLastLocation(context)
                             if (location != null) {
                                 val locString = "${location.latitude},${location.longitude}"
-                                println("📍 Location obtained: $locString")
                                 val result = RestaurantApi.searchRestaurants(location = locString)
-                                println("🍽 API result: $result")
+                                originalRestaurants = result
                                 apiResult = result
-                            } else {
-                                println("⚠ לא התקבל מיקום")
                             }
                         }
-                    } else {
-                        println("⚠ הרשאת מיקום לא ניתנה")
                     }
                 }
             )
@@ -63,12 +59,9 @@ class MainActivity : ComponentActivity() {
                         val location = getLastLocation(context)
                         if (location != null) {
                             val locString = "${location.latitude},${location.longitude}"
-                            println("📍 Location obtained: $locString")
                             val result = RestaurantApi.searchRestaurants(location = locString)
-                            println("🍽 API result: $result")
+                            originalRestaurants = result
                             apiResult = result
-                        } else {
-                            println("⚠ לא התקבל מיקום")
                         }
                     }
                 } else {
@@ -81,10 +74,11 @@ class MainActivity : ComponentActivity() {
                 restaurants = apiResult,
                 onNewSearchResults = { updatedList ->
                     apiResult = updatedList
-                }
+                },
+                originalRestaurants = originalRestaurants
             )
-
         }
+
     }
 
     @SuppressLint("MissingPermission")
