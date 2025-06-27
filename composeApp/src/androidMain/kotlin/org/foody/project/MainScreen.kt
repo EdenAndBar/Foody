@@ -12,9 +12,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import places.Restaurant
-import places.RestaurantApi
-import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.unit.sp
+
+
 
 
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
@@ -24,16 +25,31 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Category : BottomNavItem("Category", Icons.Default.Menu)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     restaurants: List<Restaurant>,
     navController: NavHostController,
     onNewSearchResults: (List<Restaurant>) -> Unit,
-    originalRestaurants: List<Restaurant>
+    originalRestaurants: List<Restaurant>,
+    onLogout: () -> Unit // 👈 נוספה פונקציה חדשה
 ) {
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Foody", fontSize = 20.sp) },
+                actions = {
+                    IconButton(onClick = {
+                        FirebaseAuth.getInstance().signOut()
+                        onLogout() // 👈 נקרא כאשר המשתמש התנתק
+                    }) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                    }
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 listOf(
@@ -49,7 +65,7 @@ fun MainScreen(
                         onClick = {
                             selectedItem = item
                             if (item == BottomNavItem.Main) {
-                                onNewSearchResults(originalRestaurants)  // איפוס לתצוגה המקורית
+                                onNewSearchResults(originalRestaurants)
                             }
                         }
                     )
