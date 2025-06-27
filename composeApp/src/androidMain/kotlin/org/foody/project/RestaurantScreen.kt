@@ -47,7 +47,8 @@ fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Clear search",
-                    tint = Color.DarkGray
+                    tint = Color.DarkGray,
+                    modifier = Modifier.size(21.dp)
                 )
             }
         } else {
@@ -79,7 +80,7 @@ fun SearchBar(
                 unfocusedTextColor = Color.Black
             ),
             singleLine = true,
-            // אפשר גם להוסיף onImeAction להקשת אנטר למשל אם תרצי
+            textStyle = LocalTextStyle.current.copy(fontSize = 16.sp)
         )
 
         IconButton(
@@ -163,10 +164,11 @@ fun RestaurantScreen(
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.Black
+                        tint = Color.Black,
+                        modifier = Modifier.size(21.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(3.dp))
+                Spacer(modifier = Modifier.width(1.dp))
                 Text(text = "Back", fontSize = 16.sp)
             }
         }
