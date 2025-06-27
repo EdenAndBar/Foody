@@ -9,7 +9,8 @@ extension KotlinBoolean {
 
 struct BottomSheetView: View {
     let restaurant: Restaurant
-    @Binding var favorites: [Restaurant]
+    //@Binding var favorites: [Restaurant]
+    @ObservedObject var favoritesViewModel: FavoritesViewModel
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = RestaurantDetailsViewModel()
     @State private var userReviews: [GoogleReviewUI] = []
@@ -19,16 +20,17 @@ struct BottomSheetView: View {
     @State private var newAuthor: String = ""
 
     private func toggleFavorite() {
-        if let index = favorites.firstIndex(of: restaurant) {
-            favorites.remove(at: index)
+        if favoritesViewModel.isFavorite(restaurant) {
+            favoritesViewModel.removeFavorite(restaurant)
         } else {
-            favorites.append(restaurant)
+            favoritesViewModel.addFavorite(restaurant)
         }
     }
 
     var isFavorite: Bool {
-        favorites.contains(restaurant)
+        favoritesViewModel.isFavorite(restaurant)
     }
+
 
     var allReviews: [GoogleReviewUI] {
         viewModel.googleReviews.map { GoogleReviewUI(from: $0) } + userReviews
@@ -167,42 +169,10 @@ struct BottomSheetView: View {
             }
         }
         .sheet(isPresented: $isAddingReview) {
-            VStack(spacing: 16) {
-                Text("Add Your Review")
-                    .font(.headline)
-
-                TextField("Your name", text: $newAuthor)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal)
-
-                VStack {
-                    Text("Rating: \(Int(newRating))")
-                    Slider(value: $newRating, in: 1...5, step: 1)
-                }
-
-                TextField("Write your review...", text: $newText, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .padding()
-
-                Button("Submit") {
-                    let newReview = GoogleReviewUI(
-                        rating: newRating,
-                        author: newAuthor.isEmpty ? "Anonymous" : newAuthor,
-                        text: newText
-                    )
-                    userReviews.append(newReview)
-                    isAddingReview = false
-                    newAuthor = ""
-                    newText = ""
-                    newRating = 5.0
-                }
-                .buttonStyle(.borderedProminent)
-
-                Button("Cancel", role: .cancel) {
-                    isAddingReview = false
-                }
+            AddReviewView(isPresented: $isAddingReview) { newReview in
+                userReviews.append(newReview)
             }
-            .padding()
         }
+        .padding()
     }
 }
