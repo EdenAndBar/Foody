@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 import places.Restaurant
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 
 
 
@@ -32,22 +33,32 @@ fun MainScreen(
     navController: NavHostController,
     onNewSearchResults: (List<Restaurant>) -> Unit,
     originalRestaurants: List<Restaurant>,
-    onLogout: () -> Unit // 👈 נוספה פונקציה חדשה
+    onLogout: () -> Unit
 ) {
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Foody", fontSize = 20.sp) },
+                title = {},
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF2F2F7),// צבע הרקע של המסך
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                ),
                 actions = {
                     IconButton(onClick = {
                         FirebaseAuth.getInstance().signOut()
-                        onLogout() // 👈 נקרא כאשר המשתמש התנתק
+                        onLogout()
                     }) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                        Icon(
+                            imageVector = Icons.Default.ExitToApp,
+                            modifier = Modifier.size(23.dp),
+                            contentDescription = "Logout"
+                        )
                     }
-                }
+                },
+                modifier = Modifier
+                    .height(55.dp) // מקטין את הגובה של ה־TopAppBar
             )
         },
         bottomBar = {
