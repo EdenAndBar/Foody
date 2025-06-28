@@ -1,6 +1,6 @@
 import SwiftUI
 import FirebaseAuth
-import PhotosUI
+import FirebaseFirestore
 
 struct SignupView: View {
     @Binding var isLoggedIn: Bool
@@ -10,8 +10,6 @@ struct SignupView: View {
     @State private var lastName = ""
     @State private var email = ""
     @State private var password = ""
-    @State private var image: UIImage?
-    @State private var selectedItem: PhotosPickerItem?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -19,31 +17,6 @@ struct SignupView: View {
             Text("Sign Up")
                 .font(.largeTitle)
                 .bold()
-            
-            PhotosPicker(selection: $selectedItem, matching: .images) {
-                ZStack {
-                    if let img = image {
-                        Image(uiImage: img)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 100, height: 100)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.gray, lineWidth: 2))
-                    } else {
-                        Circle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(width: 100, height: 100)
-                            .overlay(
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.gray)
-                                    .background(Circle().fill(Color.white).frame(width: 35, height: 35))
-                                    .offset(x: 30, y: 30)
-                            )
-                    }
-                }
-            }
-            .buttonStyle(.plain)
 
             TextField("First Name", text: $firstName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -59,25 +32,9 @@ struct SignupView: View {
             SecureField("Password", text: $password)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
 
-            .onChange(of: selectedItem) { newItem in
-                Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self),
-                       let uiImage = UIImage(data: data) {
-                        self.image = uiImage
-                    }
-                }
-            }
-
-            if let img = image {
-                Image(uiImage: img)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 100)
-                    .clipShape(Circle())
-            }
-
             if let error = errorMessage {
-                Text(error).foregroundColor(.red)
+                Text(error)
+                    .foregroundColor(.red)
             }
 
             Button(action: registerUser) {
@@ -97,11 +54,25 @@ struct SignupView: View {
 
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
-                errorMessage = error.localizedDescription
-            } else {
-                // אופציונלי: שמירה של firstName, lastName ו־image במקום אחר (Firestore/Storage)
-                onSignupSuccess()
-                isLoggedIn = true
+                errorMessage = "Signup failed: \(error.localizedDescription)"
+            } else if let user = result?.user {
+                let db = Firestore.firestore()
+                let userDoc = db.collection("users").document(user.uid)
+
+                let data: [String: Any] = [
+                    "firstName": firstName,
+                    "lastName": lastName,
+                    "email": email
+                ]
+
+                userDoc.setData(data) { error in
+                    if let error = error {
+                        errorMessage = "Failed saving user data: \(error.localizedDescription)"
+                    } else {
+                        onSignupSuccess()
+                        isLoggedIn = true
+                    }
+                }
             }
         }
     }
