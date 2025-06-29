@@ -35,95 +35,133 @@ fun MainScreen(
     originalRestaurants: List<Restaurant>,
     onLogout: () -> Unit
 ) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {},
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFF2F2F7),// צבע הרקע של המסך
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
-                ),
-                actions = {
-                    IconButton(onClick = {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = Color.White
+            ) {
+                Text("Menu", modifier = Modifier.padding(16.dp), fontSize = 18.sp)
+                Divider()
+
+                NavigationDrawerItem(
+                    label = { Text("Profile") },
+                    selected = false,
+                    onClick = {
+                        // נווטי או הוסיפי פעולה כאן
+                    },
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Settings") },
+                    selected = false,
+                    onClick = {
+                        // הגדרות
+                    },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Logout") },
+                    selected = false,
+                    onClick = {
                         FirebaseAuth.getInstance().signOut()
                         onLogout()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ExitToApp,
-                            modifier = Modifier.size(23.dp),
-                            contentDescription = "Logout"
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .height(55.dp) // מקטין את הגובה של ה־TopAppBar
-            )
-        },
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color.White, // רקע לבן
-                contentColor = Color(0xFF1C1C1E) // צבע ברירת מחדל לשחור כהה
-            ) {
-                listOf(
-                    BottomNavItem.Main,
-                    BottomNavItem.Favorites,
-                    BottomNavItem.Location,
-                    BottomNavItem.Category
-                ).forEach { item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.label,
-                                tint = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93) // שחור או אפור
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = item.label,
-                                fontSize = 12.sp,
-                                color = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
-                            )
-                        },
-                        selected = selectedItem == item,
-                        onClick = {
-                            selectedItem = item
-                            if (item == BottomNavItem.Main) {
-                                onNewSearchResults(originalRestaurants)
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Color(0xFFF2F2F7) // אפור בהיר כזה מאחורי האייקון הנבחר
-                        )
-                    )
-                }
+                    },
+                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) }
+                )
             }
         }
-
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            when (selectedItem) {
-                is BottomNavItem.Main -> {
-                    RestaurantScreen(
-                        restaurants = restaurants,
-                        navController = navController,
-                        onRestaurantClick = { clickedRestaurant ->
-                            navController.navigate("details/${clickedRestaurant.id}")
-                        },
-                        onNewSearchResults = onNewSearchResults,
-                        originalRestaurants = originalRestaurants
-                    )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            coroutineScope.launch { drawerState.open() }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu"
+                            )
+                        }
+                    },
+                    actions = {},
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFFF2F2F7)
+                    ),
+                    modifier = Modifier.height(55.dp)
+                )
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF1C1C1E)
+                ) {
+                    listOf(
+                        BottomNavItem.Main,
+                        BottomNavItem.Favorites,
+                        BottomNavItem.Location,
+                        BottomNavItem.Category
+                    ).forEach { item ->
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.label,
+                                    tint = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = item.label,
+                                    fontSize = 12.sp,
+                                    color = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                                )
+                            },
+                            selected = selectedItem == item,
+                            onClick = {
+                                selectedItem = item
+                                if (item == BottomNavItem.Main) {
+                                    onNewSearchResults(originalRestaurants)
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = Color(0xFFF2F2F7)
+                            )
+                        )
+                    }
                 }
-                is BottomNavItem.Favorites -> {
-                    Text("Favorites Screen", modifier = Modifier.fillMaxSize())
-                }
-                is BottomNavItem.Location -> {
-                    Text("Filter by Location", modifier = Modifier.fillMaxSize())
-                }
-                is BottomNavItem.Category -> {
-                    Text("Filter by Category", modifier = Modifier.fillMaxSize())
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                when (selectedItem) {
+                    is BottomNavItem.Main -> {
+                        RestaurantScreen(
+                            restaurants = restaurants,
+                            navController = navController,
+                            onRestaurantClick = { clickedRestaurant ->
+                                navController.navigate("details/${clickedRestaurant.id}")
+                            },
+                            onNewSearchResults = onNewSearchResults,
+                            originalRestaurants = originalRestaurants
+                        )
+                    }
+                    is BottomNavItem.Favorites -> {
+                        Text("Favorites Screen", modifier = Modifier.fillMaxSize())
+                    }
+                    is BottomNavItem.Location -> {
+                        Text("Filter by Location", modifier = Modifier.fillMaxSize())
+                    }
+                    is BottomNavItem.Category -> {
+                        Text("Filter by Category", modifier = Modifier.fillMaxSize())
+                    }
                 }
             }
         }
