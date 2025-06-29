@@ -1,3 +1,4 @@
+
 import SwiftUI
 import Shared
 
@@ -6,31 +7,26 @@ extension KotlinBoolean {
         return self == KotlinBoolean(bool: true)
     }
 }
-
 struct BottomSheetView: View {
     let restaurant: Restaurant
-    //@Binding var favorites: [Restaurant]
-    @ObservedObject var favoritesViewModel: FavoritesViewModel
+    @Binding var favorites: [Restaurant]  // מקור האמת
+
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = RestaurantDetailsViewModel()
     @State private var userReviews: [GoogleReviewUI] = []
     @State private var isAddingReview = false
-    @State private var newRating: Double = 5.0
-    @State private var newText: String = ""
-    @State private var newAuthor: String = ""
 
     private func toggleFavorite() {
-        if favoritesViewModel.isFavorite(restaurant) {
-            favoritesViewModel.removeFavorite(restaurant)
+        if isFavorite {
+            favorites.removeAll { $0.placeId == restaurant.placeId }
         } else {
-            favoritesViewModel.addFavorite(restaurant)
+            favorites.append(restaurant)
         }
     }
 
     var isFavorite: Bool {
-        favoritesViewModel.isFavorite(restaurant)
+        favorites.contains(where: { $0.placeId == restaurant.placeId })
     }
-
 
     var allReviews: [GoogleReviewUI] {
         viewModel.googleReviews.map { GoogleReviewUI(from: $0) } + userReviews
@@ -41,7 +37,7 @@ struct BottomSheetView: View {
             Text(restaurant.name)
                 .font(.title2)
                 .bold()
-            
+
             let isOpen = restaurant.isOpenNow?.boolValue ?? false
 
             Text(isOpen ? "Open Now" : "Closed")
@@ -51,7 +47,7 @@ struct BottomSheetView: View {
                 .cornerRadius(8)
                 .font(.subheadline)
                 .bold()
-            
+
             AsyncImage(url: URL(string: restaurant.photoUrl)) { image in
                 image.resizable().scaledToFill()
             } placeholder: {
@@ -77,7 +73,7 @@ struct BottomSheetView: View {
 
             HStack(spacing: 40) {
                 VStack {
-                    Button(action: { toggleFavorite() }) {
+                    Button(action: toggleFavorite) {
                         Image(systemName: isFavorite ? "heart.fill" : "heart")
                             .font(.system(size: 24))
                             .foregroundColor(.pink)
@@ -121,7 +117,7 @@ struct BottomSheetView: View {
                 }
             }
             .padding(.top, 10)
-            
+
             if !allReviews.isEmpty {
                 Text("Reviews")
                     .font(.headline)
@@ -173,6 +169,5 @@ struct BottomSheetView: View {
                 userReviews.append(newReview)
             }
         }
-        .padding()
     }
 }

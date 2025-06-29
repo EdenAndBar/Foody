@@ -3,9 +3,9 @@ import FirebaseAuth
 import FirebaseFirestore
 
 struct SignupView: View {
-    @Binding var isLoggedIn: Bool
     var onSignupSuccess: () -> Void
-
+    var onBackToLogin: () -> Void
+    @Binding var isLoggedIn: Bool
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
@@ -13,40 +13,51 @@ struct SignupView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Sign Up")
-                .font(.largeTitle)
-                .bold()
+        Image("backgroundImage")
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+            .opacity(1.0)
+            .offset(x: -20)
+            .ignoresSafeArea()
+        ZStack {
+            VStack {
+                Spacer().frame(height: 350)
 
-            TextField("First Name", text: $firstName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                VStack(spacing: 20) {
+                    IconTextField(iconName: "person", placeholder: "First Name", text: $firstName)
+                    IconTextField(iconName: "person", placeholder: "Last Name", text: $lastName)
+                    IconTextField(iconName: "at", placeholder: "Email", text: $email)
+                    IconTextField(iconName: "eye.slash", placeholder: "Password", text: $password, isSecure: true)
 
-            TextField("Last Name", text: $lastName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                    if let error = errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
 
-            TextField("Email", text: $email)
-                .keyboardType(.emailAddress)
-                .autocapitalization(.none)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                    Button(action: registerUser) {
+                        Text("Create Account")
+                            .foregroundColor(.white)
+                                    .frame(width: 180, height: 44)
+                                    .background(Color.gray)
+                                    .cornerRadius(20)
+                    }
+                    .padding(.horizontal)
 
-            SecureField("Password", text: $password)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                    Button(action: {
+                        onBackToLogin()
+                    }) {
+                        Text("Already have an account? Log in")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                }
 
-            if let error = errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-            }
-
-            Button(action: registerUser) {
-                Text("Create Account")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                Spacer()
             }
         }
-        .padding()
     }
 
     func registerUser() {

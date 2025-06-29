@@ -1,0 +1,21 @@
+import SwiftUI
+
+struct AboutView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("About Foody")
+                .font(.largeTitle)
+                .bold()
+
+            Text("Foody is your smart food companion, helping you discover and save your favorite restaurants near you.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding()
+
+            Spacer()
+        }
+        .padding()
+        .navigationTitle("About Us")
+    }
+}
+

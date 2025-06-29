@@ -1,133 +1,43 @@
-//import SwiftUI
-//import FirebaseAuth
-//import GoogleSignIn
-//import FirebaseCore
-//
-//struct LoginView: View {
-//    @State private var email = ""
-//    @State private var password = ""
-//    @State private var errorMessage: String?
-//    @State private var isLogin = true
-//    @Binding var isLoggedIn: Bool
-//    var onLoginSuccess: () -> Void
-//
-//    @Environment(\.dismiss) var dismiss
-//
-//    var body: some View {
-//        VStack(spacing: 20) {
-//            Text(isLogin ? "Login" : "Sign Up")
-//                .font(.largeTitle)
-//                .bold()
-//
-//            TextField("Email", text: $email)
-//                .textFieldStyle(RoundedBorderTextFieldStyle())
-//                .keyboardType(.emailAddress)
-//                .autocapitalization(.none)
-//
-//            SecureField("Password", text: $password)
-//                .textFieldStyle(RoundedBorderTextFieldStyle())
-//
-//            if let error = errorMessage {
-//                Text(error)
-//                    .foregroundColor(.red)
-//                    .multilineTextAlignment(.center)
-//            }
-//
-//            Button(action: handleAuth) {
-//                Text(isLogin ? "Login" : "Sign Up")
-//                    .frame(maxWidth: .infinity)
-//                    .padding()
-//                    .background(Color.blue)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(12)
-//            }
-//
-//            Button(action: signInWithGoogle) {
-//                HStack {
-//                    Image(systemName: "globe")
-//                    Text("Sign in with Google").bold()
-//                }
-//                .frame(maxWidth: .infinity)
-//                .padding()
-//                .background(Color.red)
-//                .foregroundColor(.white)
-//                .cornerRadius(12)
-//            }
-//
-//            Button(action: {
-//                isLogin.toggle()
-//                errorMessage = nil
-//            }) {
-//                Text(isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login")
-//                    .font(.caption)
-//            }
-//        }
-//        .padding()
-//    }
-//
-//    private func handleAuth() {
-//        errorMessage = nil
-//        if isLogin {
-//            Auth.auth().signIn(withEmail: email, password: password) { result, error in
-//                if let error = error {
-//                    errorMessage = error.localizedDescription
-//                } else {
-//                    onLoginSuccess()
-//                }
-//            }
-//
-//        } else {
-//            Auth.auth().createUser(withEmail: email, password: password) { result, error in
-//                if let error = error {
-//                    errorMessage = error.localizedDescription
-//                } else {
-//                    onLoginSuccess()
-//                }
-//            }
-//        }
-//    }
-//
-//    func signInWithGoogle() {
-//        guard let presentingVC = UIApplication.shared.connectedScenes
-//                .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController })
-//                .first else {
-//            self.errorMessage = "Unable to access root view controller"
-//            return
-//        }
-//
-//        Task {
-//            do {
-//                let signInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: presentingVC)
-//
-//                let user = signInResult.user
-//                guard let idToken = user.idToken?.tokenString else {
-//                    self.errorMessage = "Missing ID token"
-//                    return
-//                }
-//
-//                let accessToken = user.accessToken.tokenString
-//                let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
-//
-//                Auth.auth().signIn(with: credential) { result, error in
-//                    if let error = error {
-//                        self.errorMessage = error.localizedDescription
-//                    } else {
-//                        self.isLoggedIn = true
-//                        self.onLoginSuccess()
-//                    }
-//                }
-//
-//            } catch {
-//                self.errorMessage = error.localizedDescription
-//            }
-//        }
-//    }
-//}
-
 import SwiftUI
 import FirebaseAuth
 import GoogleSignIn
 import FirebaseCore
+
+struct IconTextField: View {
+    var iconName: String
+    var placeholder: String
+    @Binding var text: String
+    var isSecure: Bool = false
+
+    var body: some View {
+        HStack {
+            Image(systemName: iconName)
+                .foregroundColor(.gray)
+                .padding(.leading, 12)
+
+            if isSecure {
+                SecureField(placeholder, text: $text)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .padding(.vertical, 12)
+            } else {
+                TextField(placeholder, text: $text)
+                    .keyboardType(placeholder == "Email" ? .emailAddress : .default)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                    .padding(.vertical, 12)
+            }
+        }
+        .background(Color.white.opacity(0.2))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+        )
+        .cornerRadius(20)
+        .padding(.horizontal)
+        .foregroundColor(.primary)
+    }
+}
 
 struct LoginView: View {
     @State private var email = ""
@@ -140,70 +50,84 @@ struct LoginView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Text("Login")
-                    .font(.largeTitle)
-                    .bold()
+            ZStack {
+                Image("backgroundImage")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    .opacity(1.0)
+                    .offset(x: -20)
+                    .ignoresSafeArea()
 
-                TextField("Email", text: $email)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-
-                SecureField("Password", text: $password)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                if let error = errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                }
-
-                Button(action: handleLogin) {
-                    Text("Login")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                }
-
-                Button(action: signInWithGoogle) {
-                    HStack(spacing: 10) {
-                        Image("google_logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 18, height: 18)
-                        
-                        Text("Sign in with Google")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .padding(.horizontal)
-                    .background(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                if showSignup {
+                    SignupView(
+                        onSignupSuccess: {
+                            self.isLoggedIn = true
+                            self.onLoginSuccess()
+                        },
+                        onBackToLogin: {
+                            self.showSignup = false
+                        },
+                        isLoggedIn: $isLoggedIn
                     )
-                    .foregroundColor(.black)
-                    .cornerRadius(12)
-                }
 
-                // מעבר למסך הרשמה
-                Button(action: {
-                    showSignup = true
-                }) {
-                    
-                    Text("Don't have an account? Sign up")
-                        .font(.caption)
-                }
+                } else {
+                    VStack(spacing: 20) {
+                        IconTextField(iconName: "at", placeholder: "Email", text: $email)
+                        IconTextField(iconName: "eye.slash", placeholder: "Password", text: $password, isSecure: true)
 
-                // ניווט למסך Signup
-                NavigationLink(destination: SignupView(isLoggedIn: $isLoggedIn, onSignupSuccess: onLoginSuccess), isActive: $showSignup) {
-                    EmptyView()
+                        if let error = errorMessage {
+                            Text(error)
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+
+                        HStack(spacing: 16) {
+                            Button(action: handleLogin) {
+                                Text("Login")
+                                    .frame(maxWidth: .infinity, maxHeight: 44)
+                                    .padding(.vertical, 4)
+                                    .background(email.isEmpty || password.isEmpty ? Color.gray : Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(20)
+                            }
+                            .disabled(email.isEmpty || password.isEmpty)
+
+                            Button(action: signInWithGoogle) {
+                                HStack(spacing: 10) {
+                                    Image("google_logo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 18, height: 18)
+
+                                    Text("Sign in with Google")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: 44)
+                                .padding(.vertical, 4)
+                                .background(Color.white.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .foregroundColor(.black)
+                                .cornerRadius(20)
+                            }
+                        }
+                        .padding(.horizontal)
+
+                        Button(action: {
+                            showSignup = true
+                        }) {
+                            Text("Don't have an account? Sign up")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.top, 120)
                 }
             }
-            .padding()
         }
     }
 
@@ -220,8 +144,8 @@ struct LoginView: View {
 
     private func signInWithGoogle() {
         guard let presentingVC = UIApplication.shared.connectedScenes
-                .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController })
-                .first else {
+            .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController })
+            .first else {
             self.errorMessage = "Unable to access root view controller"
             return
         }
@@ -252,4 +176,3 @@ struct LoginView: View {
         }
     }
 }
-
