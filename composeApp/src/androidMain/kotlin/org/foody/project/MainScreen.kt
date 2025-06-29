@@ -62,7 +62,10 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = Color.White, // רקע לבן
+                contentColor = Color(0xFF1C1C1E) // צבע ברירת מחדל לשחור כהה
+            ) {
                 listOf(
                     BottomNavItem.Main,
                     BottomNavItem.Favorites,
@@ -70,19 +73,35 @@ fun MainScreen(
                     BottomNavItem.Category
                 ).forEach { item ->
                     NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.label) },
-                        label = { Text(item.label) },
+                        icon = {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.label,
+                                tint = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93) // שחור או אפור
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = item.label,
+                                fontSize = 12.sp,
+                                color = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                            )
+                        },
                         selected = selectedItem == item,
                         onClick = {
                             selectedItem = item
                             if (item == BottomNavItem.Main) {
                                 onNewSearchResults(originalRestaurants)
                             }
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color(0xFFF2F2F7) // אפור בהיר כזה מאחורי האייקון הנבחר
+                        )
                     )
                 }
             }
         }
+
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedItem) {
