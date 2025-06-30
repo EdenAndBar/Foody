@@ -27,7 +27,8 @@ struct RestaurantListView: View {
                         photoUrl: restaurant.photoUrl,
                         address: restaurant.address,
                         rating: restaurant.rating,
-                        isOpenNow: restaurant.isOpenNow?.boolValue
+                        isOpenNow: restaurant.isOpenNow?.boolValue,
+                        category: restaurant.category
                     )
                     .frame(maxWidth: .infinity)
                     .background(Color.white)

@@ -34,9 +34,3 @@ struct MainTabView: View {
     }
 }
 
-struct CategoryView: View {
-    var body: some View {
-        Text("Category screen coming soon")
-    }
-}
-

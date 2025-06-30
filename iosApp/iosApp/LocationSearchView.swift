@@ -87,25 +87,6 @@ struct LocationSearchView: View {
         }
     }
 
-
-//    private func searchByCity() {
-//        guard !cityText.trimmingCharacters(in: .whitespaces).isEmpty else {
-//            self.allRestaurants = []
-//            self.filteredRestaurants = []
-//            return
-//        }
-//
-//        let api = RestaurantApi()
-//        api.getRestaurants(city: cityText) { results in
-//            DispatchQueue.main.async {
-//                self.allRestaurants = results
-//                self.filterByName()
-//            }
-//        }
-//
-//    }
-
-
     private func filterByName() {
         if nameText.isEmpty {
             self.filteredRestaurants = allRestaurants
