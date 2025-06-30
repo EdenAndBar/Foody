@@ -36,7 +36,8 @@ data class Restaurant(
     val rating: Float,
     val types: List<String> = emptyList(),
     val isOpenNow: Boolean? = null,
-    val openingHoursText: List<String>? = null
+    val openingHoursText: List<String>? = null,
+    val category: String
 )
 
 @Serializable
@@ -139,63 +140,18 @@ object RestaurantApi {
                     rating = rating,
                     types = place.types ?: emptyList(),
                     isOpenNow = place.opening_hours?.open_now,
-                    openingHoursText = details?.opening_hours?.weekdayText
+                    openingHoursText = details?.opening_hours?.weekdayText,
+                    category = guessCategoryFromName(place.name ?: "")
                 )
-                // ✅ פילטר נוסף על שם (כדי שלא יופיעו תוצאות רנדומליות אם API לא דייק)
                 if (query == null || restaurant.name.contains(query, ignoreCase = true)) {
                     restaurant
                 } else null
             } else null
         }.filter { restaurant ->
-            restaurant.types.contains("restaurant")
+            restaurant.photoUrl.isNotBlank() && restaurant.rating > 0
         }
     }
 }
-
-
-
-
-//suspend fun searchRestaurants(location: String): List<Restaurant> {
-//    val client = getHttpClient()
-//
-//    val response: HttpResponse =
-//        client.get("https://maps.googleapis.com/maps/api/place/nearbysearch/json") {
-//            parameter("location", location)
-//            parameter("radius", "1500")
-//            parameter("type", "restaurant")
-//            parameter("language", "en")
-//            parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
-//        }
-//
-//    val responseBody = response.bodyAsText()
-//    val parsed = json.decodeFromString<PlacesResponse>(responseBody)
-//
-//    return parsed.results.mapNotNull { place ->
-//        val photoReference = place.photos?.firstOrNull()?.photoReference
-//        val rating = place.rating ?: 0f
-//        val name = place.name
-//        val address = "${place.vicinity ?: "No location info"}"
-//        val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
-//        val placeId = place.place_id
-//        val types = place.types ?: emptyList()
-//        val isOpenNow = place.opening_hours?.open_now
-//
-//        if (photoReference != null) {
-//            Restaurant(
-//                id = id,
-//                placeId = placeId,
-//                name = name,
-//                photoUrl = buildPhotoUrl(photoReference),
-//                address = address,
-//                rating = rating,
-//                types = types,
-//                isOpenNow = isOpenNow
-//            )
-//        } else {
-//            null
-//        }
-//    }
-//}
 
 suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     val client = getHttpClient()
@@ -213,43 +169,27 @@ suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     return parsed.result
 }
 
-//suspend fun searchRestaurantsByCity(city: String): List<Restaurant> {
-//    val client = getHttpClient()
-//
-//    val response: HttpResponse =
-//        client.get("https://maps.googleapis.com/maps/api/place/textsearch/json") {
-//            parameter("query", "restaurants in $city")
-//            parameter("language", "en")
-//            parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
-//        }
-//
-//    val responseBody = response.bodyAsText()
-//    val parsed = json.decodeFromString<PlacesResponse>(responseBody)
-//
-//    return parsed.results.mapNotNull { place ->
-//        val photoReference = place.photos?.firstOrNull()?.photoReference
-//        val rating = place.rating ?: 0f
-//        val name = place.name
-//        val address = "${place.vicinity ?: "No location info"}"
-//        val id = "restaurant-${name.hashCode()}-${photoReference.hashCode()}"
-//        val placeId = place.place_id
-//
-//        if (photoReference != null) {
-//            Restaurant(
-//                id = id,
-//                placeId = placeId,
-//                name = name,
-//                photoUrl = buildPhotoUrl(photoReference),
-//                address = address,
-//                rating = rating,
-//                types = place.types ?: emptyList(),
-//                isOpenNow = place.opening_hours?.open_now
-//            )
-//        } else {
-//            null
-//        }
-//    }
-//}
+private fun guessCategoryFromName(name: String): String {
+    return when {
+        name.contains("pizza", ignoreCase = true) -> "Pizza"
+        name.contains("burger", ignoreCase = true) -> "Burger"
+        name.contains("sushi", ignoreCase = true) -> "Sushi"
+        name.contains("cafe", ignoreCase = true) || name.contains("coffee", ignoreCase = true) -> "Cafe"
+        name.contains("bakery", ignoreCase = true) || name.contains("מאפה") -> "Bakery"
+        name.contains("asian", ignoreCase = true) -> "Asian"
+        name.contains("steak", ignoreCase = true) -> "Steakhouse"
+        name.contains("falafel", ignoreCase = true) -> "Falafel"
+        name.contains("shawarma", ignoreCase = true) -> "Shawarma"
+        name.contains("italian", ignoreCase = true) -> "Italian"
+        name.contains("indian", ignoreCase = true) -> "Indian"
+        name.contains("chinese", ignoreCase = true) -> "Chinese"
+        name.contains("bar", ignoreCase = true) -> "Bar"
+        name.contains("vegan", ignoreCase = true) -> "Vegan"
+        name.contains("grill", ignoreCase = true) -> "Grill"
+        else -> ""
+    }
+}
+
 
 
 

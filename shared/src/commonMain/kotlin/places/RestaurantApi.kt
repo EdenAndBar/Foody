@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import places.getRestaurantDetails
 import places.RestaurantApi as PlacesApi
 
+
 class RestaurantApiService : CoroutineScope {
     private val job = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.Main + job
@@ -54,5 +55,6 @@ class RestaurantApiService : CoroutineScope {
             }
         }
     }
-
 }
+
+

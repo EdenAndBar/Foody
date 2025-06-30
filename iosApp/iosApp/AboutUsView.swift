@@ -69,7 +69,7 @@ No more guessing. Just great food.
         }
         .navigationTitle("About Us")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true) // מסתיר את כפתור החזרה האוטומטי
+        .navigationBarBackButtonHidden(true) 
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
