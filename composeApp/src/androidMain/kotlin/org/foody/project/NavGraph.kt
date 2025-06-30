@@ -72,5 +72,10 @@ fun AppNavHost(
                 )
             }
         }
+
+        composable("profile") {
+            ProfileScreen()
+        }
+
     }
 }

@@ -52,7 +52,8 @@ fun MainScreen(
                     label = { Text("Profile") },
                     selected = false,
                     onClick = {
-                        // נווטי או הוסיפי פעולה כאן
+                        coroutineScope.launch { drawerState.close() }
+                        navController.navigate("profile")
                     },
                     icon = { Icon(Icons.Default.Person, contentDescription = null) }
                 )
