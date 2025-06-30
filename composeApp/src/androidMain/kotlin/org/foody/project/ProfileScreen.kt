@@ -4,22 +4,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.android.gms.tasks.Tasks
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    onBackClick: () -> Unit
+) {
     val user = FirebaseAuth.getInstance().currentUser
     val initialName = user?.displayName ?: ""
     val email = user?.email ?: ""
@@ -29,6 +35,9 @@ fun ProfileScreen() {
     var newPassword by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
+
+    var showPasswordField by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val background = Color.White
     val textPrimary = Color(0xFF1C1C1E)
@@ -41,15 +50,30 @@ fun ProfileScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(background)
-            .padding(horizontal = 24.dp),
-        contentAlignment = Alignment.Center
     ) {
+        // החץ בפינה שמאלית עליונה
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 20.dp, start = 2.dp)
+
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black
+            )
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .align(Alignment.Center) // 💥 מוסיף יישור לאמצע התצוגה
         ) {
 
             Box(
@@ -120,17 +144,48 @@ fun ProfileScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password (new)
-            TextField(
-                value = newPassword,
-                onValueChange = { newPassword = it },
-                label = { Text("New Password", color = textSecondary) },
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors(inputBackground, textPrimary, textSecondary),
-                shape = RoundedCornerShape(12.dp)
-            )
+            // כפתור להראות/להסתיר שדה סיסמה
+            TextButton(
+                onClick = {
+                    showPasswordField = !showPasswordField
+                    if (!showPasswordField) {
+                        newPassword = "" // מאפס את השדה כשמסירים את האפשרות
+                        passwordVisible = false
+                    }
+                }
+            ) {
+                Text(
+                    text = if (showPasswordField) "Cancel Password Change" else "Click to Change Password",
+                    fontSize = 14.sp,
+                    color = textSecondary
+                )
+            }
+
+            if (showPasswordField) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // שדה סיסמה עם אייקון עין להראות/להסתיר
+                TextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text("New Password", color = textSecondary) },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = textFieldColors(inputBackground, textPrimary, textSecondary),
+                    shape = RoundedCornerShape(12.dp),
+                    trailingIcon = {
+                        val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = if (passwordVisible) "Hide Password" else "Show Password",
+                                tint = Color.Gray
+                            )
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -203,13 +258,13 @@ fun textFieldColors(
 ): TextFieldColors = TextFieldDefaults.colors(
     focusedTextColor = primary,
     unfocusedTextColor = primary,
-    disabledTextColor = secondary.copy(alpha = 0.7f), // טקסט מאופרר
+    disabledTextColor = secondary.copy(alpha = 0.7f),
     disabledLabelColor = secondary.copy(alpha = 0.7f),
-    disabledIndicatorColor = Color.Transparent, // אין קו
+    disabledIndicatorColor = Color.Transparent,
     focusedIndicatorColor = Color.Transparent,
     unfocusedIndicatorColor = Color.Transparent,
     cursorColor = primary,
     focusedContainerColor = background,
     unfocusedContainerColor = background,
-    disabledContainerColor = Color(0xFFE5E5EA) // רקע אפור בהיר לשדה לא פעיל
+    disabledContainerColor = Color(0xFFE5E5EA)
 )
