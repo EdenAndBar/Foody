@@ -1,23 +1,20 @@
 package org.foody.project
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import places.Restaurant
-import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
-
-
 
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Main : BottomNavItem("Main", Icons.Default.Home)
@@ -38,44 +35,56 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
+    val user = FirebaseAuth.getInstance().currentUser
+    val displayName = user?.displayName ?: ""
+    val firstName = displayName.split(" ").firstOrNull() ?: ""
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = Color.White
+                drawerContainerColor = Color(0xFFF9F9F9),
+                modifier = Modifier.fillMaxHeight()
             ) {
-                Text("Menu", modifier = Modifier.padding(16.dp), fontSize = 18.sp)
-                Divider()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    ) {
+                        Text(
+                            text = "Hello, $firstName!",
+                            fontSize = 18.sp,
+                            color = Color(0xFF1C1C1E)
+                        )
+                    }
 
-                NavigationDrawerItem(
-                    label = { Text("Profile") },
-                    selected = false,
-                    onClick = {
+                    Divider(color = Color.LightGray)
+
+                    DrawerItem(icon = Icons.Default.Person, label = "Profile") {
                         coroutineScope.launch { drawerState.close() }
                         navController.navigate("profile")
-                    },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) }
-                )
+                    }
 
-                NavigationDrawerItem(
-                    label = { Text("Settings") },
-                    selected = false,
-                    onClick = {
-                        // הגדרות
-                    },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) }
-                )
+                    //Spacer(modifier = Modifier.height(8.dp))
 
-                NavigationDrawerItem(
-                    label = { Text("Logout") },
-                    selected = false,
-                    onClick = {
+                    DrawerItem(icon = Icons.Default.Info, label = "About Foody") {
+                        coroutineScope.launch { drawerState.close() }
+                        // TODO: Add settings screen
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Divider(color = Color.LightGray)
+
+                    DrawerItem(icon = Icons.Default.ExitToApp, label = "Logout", color = Color.Red) {
                         FirebaseAuth.getInstance().signOut()
                         onLogout()
-                    },
-                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) }
-                )
+                    }
+                }
             }
         }
     ) {
@@ -87,13 +96,9 @@ fun MainScreen(
                         IconButton(onClick = {
                             coroutineScope.launch { drawerState.open() }
                         }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu"
-                            )
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }
                     },
-                    actions = {},
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color(0xFFF2F2F7)
                     ),
@@ -147,8 +152,8 @@ fun MainScreen(
                         RestaurantScreen(
                             restaurants = restaurants,
                             navController = navController,
-                            onRestaurantClick = { clickedRestaurant ->
-                                navController.navigate("details/${clickedRestaurant.id}")
+                            onRestaurantClick = {
+                                navController.navigate("details/${it.id}")
                             },
                             onNewSearchResults = onNewSearchResults,
                             originalRestaurants = originalRestaurants
@@ -167,4 +172,24 @@ fun MainScreen(
             }
         }
     }
+}
+
+@Composable
+fun DrawerItem(
+    icon: ImageVector,
+    label: String,
+    color: Color = Color(0xFF1C1C1E),
+    onClick: () -> Unit
+) {
+    NavigationDrawerItem(
+        label = {
+            Text(label, fontSize = 16.sp, color = color)
+        },
+        selected = false,
+        onClick = onClick,
+        icon = {
+            Icon(imageVector = icon, contentDescription = label, tint = color)
+        },
+        modifier = Modifier.padding(vertical = 4.dp)
+    )
 }
