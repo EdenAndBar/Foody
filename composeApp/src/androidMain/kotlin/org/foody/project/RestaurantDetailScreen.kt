@@ -39,7 +39,6 @@ fun RestaurantDetailScreen(
     val uriHandler = LocalUriHandler.current
     var visibleReviewsCount by remember { mutableStateOf(3) }
 
-    // משתנים לניהול ביקורת חדשה
     var userName by remember { mutableStateOf("") }
     var userComment by remember { mutableStateOf("") }
     var userRating by remember { mutableStateOf(0) }

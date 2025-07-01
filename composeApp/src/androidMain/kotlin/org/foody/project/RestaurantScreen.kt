@@ -26,7 +26,7 @@ fun SearchBar(
     searchQuery: String,
     onSearchChanged: (String) -> Unit,
     onSearchSubmit: () -> Unit,
-    onClearClick: () -> Unit  // הוספתי callback לניקוי
+    onClearClick: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 

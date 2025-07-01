@@ -52,14 +52,29 @@ fun MainScreen(
                         .padding(16.dp)
                 ) {
                     Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 20.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = "Hello, $firstName!",
                             fontSize = 18.sp,
                             color = Color(0xFF1C1C1E)
                         )
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch { drawerState.close() }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close Drawer",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color(0xFF1C1C1E)
+                            )
+                        }
                     }
 
                     Divider(color = Color.LightGray)
@@ -80,7 +95,10 @@ fun MainScreen(
 
                     Divider(color = Color.LightGray)
 
-                    DrawerItem(icon = Icons.Default.ExitToApp, label = "Logout", color = Color.Red) {
+                    DrawerItem(icon = Icons.Default.ExitToApp, label = "Logout", color = Color(
+                        0xFFCE0E31
+                    )
+                    ) {
                         FirebaseAuth.getInstance().signOut()
                         onLogout()
                     }
