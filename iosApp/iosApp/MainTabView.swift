@@ -4,6 +4,8 @@ import FirebaseAuth
 struct MainTabView: View {
     @Binding var isLoggedIn: Bool
     @Binding var favorites: [Restaurant]
+    @State private var restaurants: [Restaurant] = []
+    @State private var didLoad = false
 
     var body: some View {
         TabView {
@@ -25,12 +27,25 @@ struct MainTabView: View {
                     Text("Location")
                 }
 
-            CategoryView()
+            MapView()
                 .tabItem {
-                    Image(systemName: "line.3.horizontal")
-                    Text("Category")
-                }
+                        Label("Map", systemImage: "map")
+                    }
         }
+        .onAppear {
+                    if !didLoad {
+                        didLoad = true
+                        let api = RestaurantApi()
+                        api.getRestaurants(city: "tel aviv") { result in
+                            self.restaurants = result
+                        }
+                    }
+                }
     }
 }
 
+struct MapView: View {
+    var body: some View {
+        Text("Map View Placeholder")
+    }
+}

@@ -33,9 +33,9 @@ struct ContentView: View {
                                         .font(.title2)
                                 }
                                 .padding(.leading)
-
+                                
                                 Spacer()
-
+                                
                                 // כפתור רענון מיקום
                                 Button(action: {
                                     locationManager.refreshLocation()
@@ -45,16 +45,16 @@ struct ContentView: View {
                                 .padding(.trailing)
                             }
                         }
-
+                        
                     }
-
+                    
                     if restaurants.isEmpty {
                         if isSearchMode {
                             if hasLoadedRestaurants {
                                 VStack(spacing: 16) {
                                     Text("No restaurants found for \"\(searchText)\"")
                                         .foregroundColor(.gray)
-
+                                    
                                     Button(action: {
                                         searchText = ""
                                         restaurants = []
@@ -100,7 +100,7 @@ struct ContentView: View {
                         EmptyView()
                     }
                 }
-
+                
                 if hasLoadedRestaurants && !restaurants.isEmpty {
                     if showSidebar {
                         Color.black.opacity(0.3)
@@ -115,7 +115,7 @@ struct ContentView: View {
                     GeometryReader { geometry in
                         VStack(alignment: .leading, spacing: 16) {
                             Spacer().frame(height: 80) // ריווח עליון
-
+                            
                             // כפתור פרופיל
                             Button(action: {
                                 path.append("profile")
@@ -124,7 +124,7 @@ struct ContentView: View {
                                     .font(.headline)
                                     .foregroundColor(.primary)
                             }
-
+                            
                             // כפתור About Us
                             Button(action: {
                                 path.append("about")
@@ -133,7 +133,7 @@ struct ContentView: View {
                                     .font(.headline)
                                     .foregroundColor(.primary)
                             }
-
+                            
                             // כפתור Logout
                             Button(action: {
                                 withAnimation { showSidebar = false }
@@ -147,13 +147,13 @@ struct ContentView: View {
                             Spacer()
                         }
                         .frame(width: 200, height: .infinity)
-                        .background(Color(UIColor.systemGray6))
+                        //.background(Color(UIColor.systemGray6))
                         .offset(x: showSidebar ? 0 : -300)
                         .animation(.easeInOut(duration: 0.3), value: showSidebar)
                         .edgesIgnoringSafeArea(.all)
                         .zIndex(1)
                     }
-
+                    
                 }
             }
         }
@@ -174,7 +174,7 @@ struct ContentView: View {
         .onChange(of: searchText) { newValue in
             let trimmed = newValue.trimmingCharacters(in: .whitespaces)
             let api = RestaurantApiService()
-
+            
             if trimmed.isEmpty {
                 if let coordinate = locationManager.location {
                     let latLng = "\(coordinate.latitude),\(coordinate.longitude)"
@@ -190,7 +190,7 @@ struct ContentView: View {
             }
         }
     }
-
+    
     private func loadNearbyRestaurants(location: String) {
         print("🍽 Loading restaurants for location: \(location)")
         let api = RestaurantApi()

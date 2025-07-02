@@ -2,6 +2,7 @@ import SwiftUI
 import Shared
 
 struct RestaurantListView: View {
+    var title: String = "Restaurants"
     let restaurants: [Restaurant]
     @Binding var favorites: [Restaurant]
     @Binding var searchText: String

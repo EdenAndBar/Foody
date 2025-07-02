@@ -15,7 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		FC495F732E12992400BA550B /* foody.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = foody.app; path = "/Users/bardavidi/Desktop/Foody/iosApp/build/Debug-iphoneos/foody.app"; sourceTree = "<absolute>"; };
+		FC9214522E15860D00F1A14A /* foody.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = foody.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -65,6 +65,7 @@
 			children = (
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
+				FC9214522E15860D00F1A14A /* foody.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,7 +97,7 @@
 				FC1390032E0D844200BA60E8 /* GoogleSignInSwift */,
 			);
 			productName = iosApp;
-			productReference = FC495F732E12992400BA550B /* foody.app */;
+			productReference = FC9214522E15860D00F1A14A /* foody.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

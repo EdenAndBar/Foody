@@ -141,7 +141,7 @@ object RestaurantApi {
                     types = place.types ?: emptyList(),
                     isOpenNow = place.opening_hours?.open_now,
                     openingHoursText = details?.opening_hours?.weekdayText,
-                    category = guessCategoryFromName(place.name ?: "")
+                    category = guessCategoryFromName(place.name ?: "").lowercase()
                 )
                 if (query == null || restaurant.name.contains(query, ignoreCase = true)) {
                     restaurant
@@ -189,7 +189,3 @@ private fun guessCategoryFromName(name: String): String {
         else -> ""
     }
 }
-
-
-
-

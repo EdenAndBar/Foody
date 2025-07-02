@@ -7,7 +7,7 @@ struct RestaurantCard: View {
     let rating: Float
     let isOpenNow: Bool?
     let category: String?
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ZStack(alignment: .topTrailing) {
@@ -25,7 +25,7 @@ struct RestaurantCard: View {
                 .frame(height: 180)
                 .clipped()
                 .cornerRadius(16)
-
+                
                 if let open = isOpenNow {
                     Text(open ? "Open" : "Closed")
                         .font(.caption)
@@ -38,95 +38,44 @@ struct RestaurantCard: View {
                         .padding(10)
                 }
             }
+            
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(name)
+                        .font(.title3)
+                        .fontWeight(.semibold)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(name)
-                    .font(.title3)
-                    .fontWeight(.semibold)
-
-                Text(address)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                if let category = category?.lowercased(),
-                   allowedCategories.contains(category) {
-                    Text(category.uppercased())
+                    Text("📍 \(address)")
                         .font(.caption)
-                        .foregroundColor(categoryColors[category, default: .blue])
+                        .foregroundColor(.gray)
+
+                    if let category = category?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !category.isEmpty {
+                        Text("📌\(category.capitalized)")
+                            .font(.caption)
+                            .foregroundColor(categoryColors[category.lowercased(), default: .blue])
+                    }
                 }
 
-                HStack(spacing: 6) {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                    Text(String(format: "%.1f", rating))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                Spacer()
+
+                VStack {
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                        Text(String(format: "%.1f", rating))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             .padding(.horizontal)
             .padding(.bottom, 12)
+
         }
         .background(Color(.systemGray6))
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 4)
     }
 }
-
-let allowedCategories: Set<String> = [
-    "pizza",
-    "sushi",
-    "burger",
-    "cafe",
-    "dessert",
-    "asian",
-    "italian",
-    "indian",
-    "chinese",
-    "middle eastern",
-    "home food",
-    "mexican",
-    "thai",
-    "japanese",
-    "korean",
-    "lebanese",
-    "bbq",
-    "steakhouse",
-    "vegan",
-    "vegetarian",
-    "seafood",
-    "falafel",
-    "shawarma",
-    "grill",
-    "mediterranean",
-    "bistro",
-    "brunch",
-    "bakery",
-    "ice cream",
-    "donuts",
-    "ramen",
-    "tapas",
-    "noodles"
-]
-
-let categoryColors: [String: Color] = [
-    "pizza": .red,
-    "sushi": .purple,
-    "burger": .orange,
-    "cafe": .brown,
-    "dessert": .pink,
-    "asian": .teal,
-    "italian": .green,
-    "indian": .yellow,
-    "chinese": .mint,
-    "falafel": .green,
-    "shawarma": .red,
-    "vegan": .green,
-    "steakhouse": .gray,
-    "bistro": .indigo,
-    "bakery": .pink,
-    "ice cream": .cyan,
-    "ramen": .blue,
-    "noodles": .orange
-]
-
-

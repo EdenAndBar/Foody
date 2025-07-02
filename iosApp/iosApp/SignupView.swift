@@ -11,6 +11,10 @@ struct SignupView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var errorMessage: String?
+    
+    var isFormComplete: Bool {
+        !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !password.isEmpty
+    }
 
     var body: some View {
         Image("backgroundImage")
@@ -40,10 +44,11 @@ struct SignupView: View {
                     Button(action: registerUser) {
                         Text("Create Account")
                             .foregroundColor(.white)
-                                    .frame(width: 180, height: 44)
-                                    .background(Color.gray)
-                                    .cornerRadius(20)
+                            .frame(width: 180, height: 44)
+                            .background(isFormComplete ? Color.blue : Color.gray)
+                            .cornerRadius(20)
                     }
+                    .disabled(!isFormComplete)
                     .padding(.horizontal)
 
                     Button(action: {
@@ -65,6 +70,7 @@ struct SignupView: View {
 
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
+                print("❌ Registration error: \(error.localizedDescription)")
                 errorMessage = "Signup failed: \(error.localizedDescription)"
             } else if let user = result?.user {
                 let db = Firestore.firestore()
@@ -80,8 +86,8 @@ struct SignupView: View {
                     if let error = error {
                         errorMessage = "Failed saving user data: \(error.localizedDescription)"
                     } else {
+                        print("✅ User registered successfully")
                         onSignupSuccess()
-                        isLoggedIn = true
                     }
                 }
             }

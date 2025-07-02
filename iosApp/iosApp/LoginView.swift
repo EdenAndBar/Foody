@@ -36,6 +36,7 @@ struct IconTextField: View {
         .cornerRadius(20)
         .padding(.horizontal)
         .foregroundColor(.primary)
+        .frame(maxWidth: 350)
     }
 }
 
@@ -86,7 +87,7 @@ struct LoginView: View {
                         HStack(spacing: 16) {
                             Button(action: handleLogin) {
                                 Text("Login")
-                                    .frame(maxWidth: .infinity, maxHeight: 44)
+                                    .frame(width: 130, height: 44)
                                     .padding(.vertical, 4)
                                     .background(email.isEmpty || password.isEmpty ? Color.gray : Color.blue)
                                     .foregroundColor(.white)
@@ -96,15 +97,15 @@ struct LoginView: View {
 
                             Button(action: signInWithGoogle) {
                                 HStack(spacing: 10) {
-                                    Image("google_logo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 18, height: 18)
-
-                                    Text("Sign in with Google")
-                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Sign in with")
+                                            .font(.system(size: 16, weight: .semibold))
+                                        
+                                        Image("google_logo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 18, height: 18)
                                 }
-                                .frame(maxWidth: .infinity, maxHeight: 44)
+                                .frame(width: 170, height: 44)
                                 .padding(.vertical, 4)
                                 .background(Color.white.opacity(0.8))
                                 .overlay(
