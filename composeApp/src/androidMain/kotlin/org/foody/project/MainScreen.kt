@@ -15,6 +15,12 @@ import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import places.Restaurant
+import android.annotation.SuppressLint
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
+
+
 
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Main : BottomNavItem("Main", Icons.Default.Home)
@@ -26,10 +32,8 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    restaurants: List<Restaurant>,
     navController: NavHostController,
-    onNewSearchResults: (List<Restaurant>) -> Unit,
-    originalRestaurants: List<Restaurant>,
+    viewModel: RestaurantsViewModel,
     onLogout: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -38,6 +42,16 @@ fun MainScreen(
     val user = FirebaseAuth.getInstance().currentUser
     val displayName = user?.displayName ?: ""
     val firstName = displayName.split(" ").firstOrNull() ?: ""
+
+    var currentLocation by remember { mutableStateOf<String?>(null) }
+
+    // קריאה לקבלת מיקום והטענת מסעדות
+    GetCurrentLocation { location ->
+        if (currentLocation == null) { // כדי להפעיל פעם אחת בלבד
+            currentLocation = location
+            viewModel.loadInitialRestaurants(location)
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -84,20 +98,19 @@ fun MainScreen(
                         navController.navigate("profile")
                     }
 
-                    //Spacer(modifier = Modifier.height(8.dp))
-
                     DrawerItem(icon = Icons.Default.Info, label = "About Foody") {
                         coroutineScope.launch { drawerState.close() }
-                        // TODO: Add settings screen
+                        // TODO: Add settings screen here if needed
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     Divider(color = Color.LightGray)
 
-                    DrawerItem(icon = Icons.Default.ExitToApp, label = "Logout", color = Color(
-                        0xFFCE0E31
-                    )
+                    DrawerItem(
+                        icon = Icons.Default.ExitToApp,
+                        label = "Logout",
+                        color = Color(0xFFCE0E31)
                     ) {
                         FirebaseAuth.getInstance().signOut()
                         onLogout()
@@ -152,9 +165,7 @@ fun MainScreen(
                             selected = selectedItem == item,
                             onClick = {
                                 selectedItem = item
-                                if (item == BottomNavItem.Main) {
-                                    onNewSearchResults(originalRestaurants)
-                                }
+                                // לא צריך לעשות כאן כלום לגבי רשימות, ה-ViewModel מטפל בכך
                             },
                             colors = NavigationBarItemDefaults.colors(
                                 indicatorColor = Color(0xFFF2F2F7)
@@ -168,23 +179,37 @@ fun MainScreen(
                 when (selectedItem) {
                     is BottomNavItem.Main -> {
                         RestaurantScreen(
-                            restaurants = restaurants,
                             navController = navController,
-                            onRestaurantClick = {
-                                navController.navigate("details/${it.id}")
-                            },
-                            onNewSearchResults = onNewSearchResults,
-                            originalRestaurants = originalRestaurants
+                            viewModel = viewModel,  // מעבירים את ה-ViewModel
+                            onRestaurantClick = { navController.navigate("details/${it.id}") }
                         )
                     }
                     is BottomNavItem.Favorites -> {
-                        Text("Favorites Screen", modifier = Modifier.fillMaxSize())
+                        Text(
+                            "Favorites Screen",
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                     is BottomNavItem.Location -> {
-                        Text("Filter by Location", modifier = Modifier.fillMaxSize())
+                        Text(
+                            "Filter by Location",
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                     is BottomNavItem.Category -> {
-                        Text("Filter by Category", modifier = Modifier.fillMaxSize())
+                        Text(
+                            "Filter by Category",
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                 }
             }
@@ -210,4 +235,24 @@ fun DrawerItem(
         },
         modifier = Modifier.padding(vertical = 4.dp)
     )
+}
+
+@SuppressLint("MissingPermission")
+@Composable
+fun GetCurrentLocation(onLocationReceived: (String) -> Unit) {
+    val context = LocalContext.current
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    LaunchedEffect(Unit) {
+        val cancellationTokenSource = CancellationTokenSource()
+        fusedLocationClient.getCurrentLocation(
+            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+            cancellationTokenSource.token
+        ).addOnSuccessListener { location ->
+            location?.let {
+                val locationStr = "${it.latitude},${it.longitude}"
+                onLocationReceived(locationStr)
+            }
+        }
+    }
 }

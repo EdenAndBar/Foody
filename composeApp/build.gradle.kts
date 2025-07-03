@@ -25,9 +25,9 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            // implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.androidx.lifecycle.runtime.ktx)
 
-            // implementation(libs.androidx.runtime)
         }
 
         commonMain.dependencies {
@@ -91,6 +91,6 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.play.services.auth)
     implementation(platform(libs.firebase.bom))
-
+    implementation(libs.accompanist.permissions)
 }
 

@@ -8,17 +8,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import places.Restaurant
-import places.RestaurantApi
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,9 +26,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
-            var originalRestaurants by remember { mutableStateOf<List<Restaurant>>(emptyList()) }
-            var apiResult by remember { mutableStateOf<List<Restaurant>>(emptyList()) } // רשימת תצוגה שמתעדכנת בחיפוש
             val navController = rememberNavController()
+            val viewModel: RestaurantsViewModel = viewModel()
             val coroutineScope = rememberCoroutineScope()
 
             val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -37,12 +35,9 @@ class MainActivity : ComponentActivity() {
                 onResult = { isGranted ->
                     if (isGranted) {
                         coroutineScope.launch {
-                            val location = getLastLocation(context)
-                            if (location != null) {
-                                val locString = "${location.latitude},${location.longitude}"
-                                val result = RestaurantApi.searchRestaurants(location = locString)
-                                originalRestaurants = result
-                                apiResult = result
+                            val locString = getLastLocationString(context)
+                            if (locString != null) {
+                                viewModel.loadInitialRestaurants(locString)
                             }
                         }
                     }
@@ -55,14 +50,9 @@ class MainActivity : ComponentActivity() {
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
-                    coroutineScope.launch {
-                        val location = getLastLocation(context)
-                        if (location != null) {
-                            val locString = "${location.latitude},${location.longitude}"
-                            val result = RestaurantApi.searchRestaurants(location = locString)
-                            originalRestaurants = result
-                            apiResult = result
-                        }
+                    val locString = getLastLocationString(context)
+                    if (locString != null) {
+                        viewModel.loadInitialRestaurants(locString)
                     }
                 } else {
                     locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -71,46 +61,36 @@ class MainActivity : ComponentActivity() {
 
             AppNavHost(
                 navController = navController,
-                restaurants = apiResult,
-                onNewSearchResults = { updatedList ->
-                    apiResult = updatedList
-                },
-                originalRestaurants = originalRestaurants
+                viewModel = viewModel  // כאן מעבירים את אותו מופע ViewModel!
             )
         }
-
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun getLastLocation(context: android.content.Context): Location? {
+    private suspend fun getLastLocationString(context: android.content.Context): String? {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            println("⚠ אין הרשאת מיקום בעת קריאה ל־getLastLocation")
             return null
         }
 
-        return suspendCancellableCoroutine { cont ->
+        return kotlinx.coroutines.suspendCancellableCoroutine { cont ->
             val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
                 .setMaxUpdates(1)
                 .build()
 
             val callback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
-                    val location = result.lastLocation
-                    println("📌 onLocationResult: $location")
-                    cont.resume(location) {}
+                    val location: Location? = result.lastLocation
+                    cont.resume(location?.let { "${it.latitude},${it.longitude}" }) {}
                     fusedLocationClient.removeLocationUpdates(this)
                 }
-
-                override fun onLocationAvailability(availability: LocationAvailability) {
-                    println("📌 onLocationAvailability: ${availability.isLocationAvailable}")
-                }
             }
-
             fusedLocationClient.requestLocationUpdates(request, callback, null)
         }
     }
 }
+
+

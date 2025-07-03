@@ -2,6 +2,8 @@ package org.foody.project
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+
 
 object FirebaseAuthManager {
 
@@ -45,4 +47,21 @@ object FirebaseAuthManager {
                 }
             }
     }
+
+    fun loginWithGoogle(
+        idToken: String,
+        onSuccess: (FirebaseUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    auth.currentUser?.let { user -> onSuccess(user) }
+                } else {
+                    onError(task.exception?.localizedMessage ?: "Google login failed")
+                }
+            }
+    }
+
 }

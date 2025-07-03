@@ -19,7 +19,7 @@ import places.Restaurant
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.filled.*
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun SearchBar(
@@ -101,35 +101,17 @@ fun SearchBar(
 
 @Composable
 fun RestaurantScreen(
-    restaurants: List<Restaurant>,
     navController: NavHostController,
-    onRestaurantClick: (Restaurant) -> Unit,
-    onNewSearchResults: (List<Restaurant>) -> Unit,
-    originalRestaurants: List<Restaurant>
+    viewModel: RestaurantsViewModel,
+    onRestaurantClick: (Restaurant) -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var favorites by remember { mutableStateOf(listOf<Restaurant>()) }
-    var searchResults by remember { mutableStateOf<List<Restaurant>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
 
-    val api = remember { org.foody.project.RestaurantApiService() }
-    val coroutineScope = rememberCoroutineScope()
-
-    fun performSearch() {
-        if (searchQuery.isNotBlank()) {
-            isLoading = true
-            coroutineScope.launch {
-                api.getRestaurantsByName(searchQuery) { results ->
-                    searchResults = results
-                    onNewSearchResults(results)
-                    isLoading = false
-                }
-            }
-        } else {
-            searchResults = emptyList()
-            onNewSearchResults(restaurants)
-        }
-    }
+    val restaurants = viewModel.apiResult
+    val searchQuery = viewModel.searchQuery
+    val isLoading = viewModel.isLoading
+    val searchResults = viewModel.searchResults
+    val favorites = viewModel.favorites
+    val originalRestaurants = viewModel.originalRestaurants
 
     Column(
         modifier = Modifier
@@ -138,13 +120,9 @@ fun RestaurantScreen(
     ) {
         SearchBar(
             searchQuery = searchQuery,
-            onSearchChanged = { searchQuery = it },
-            onSearchSubmit = { performSearch() },
-            onClearClick = {
-                searchQuery = ""
-                searchResults = emptyList()
-                onNewSearchResults(originalRestaurants)
-            }
+            onSearchChanged = { viewModel.updateSearchQuery(it) },
+            onSearchSubmit = { viewModel.searchRestaurants() },
+            onClearClick = { viewModel.clearSearch(originalRestaurants) }
         )
 
         if (searchResults.isNotEmpty()) {
@@ -155,11 +133,7 @@ fun RestaurantScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = {
-                        searchQuery = ""
-                        searchResults = emptyList()
-                        onNewSearchResults(originalRestaurants)
-                    }
+                    onClick = { viewModel.clearSearch(originalRestaurants) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -190,16 +164,8 @@ fun RestaurantScreen(
                     RestaurantCard(
                         restaurant = restaurant,
                         isFavorite = favorites.contains(restaurant),
-                        onFavoriteClick = { clickedRestaurant ->
-                            favorites = if (favorites.contains(clickedRestaurant)) {
-                                favorites - clickedRestaurant
-                            } else {
-                                favorites + clickedRestaurant
-                            }
-                        },
-                        onTap = { clickedRestaurant ->
-                            onRestaurantClick(clickedRestaurant)
-                        }
+                        onFavoriteClick = { viewModel.toggleFavorite(it) },
+                        onTap = { onRestaurantClick(it) }
                     )
                 }
             }
