@@ -10,13 +10,18 @@ struct LocationSearchView: View {
     @Binding var favorites: [Restaurant]
     @State private var path: [Restaurant] = []
 
+    @StateObject private var filter = RestaurantFilter()
+    @State private var showFilterSheet = false
+
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 12) {
-                // שדות חיפוש מעוצבים עם אייקונים
-                HStack(spacing: 12) {
-                    searchFieldStyled(systemImage: "building.2.crop.circle", placeholder: "Enter city...", text: $cityText)
-                    searchFieldStyled(systemImage: "fork.knife.circle", placeholder: "Restaurant name", text: $nameText)
+                VStack(spacing: 8) {
+                    HStack(spacing: 12) {
+                        searchFieldStyled(systemImage: "building.2.crop.circle", placeholder: "Enter city...", text: $cityText)
+                        searchFieldStyled(systemImage: "fork.knife.circle", placeholder: "Restaurant name", text: $nameText)
+                    }
+                    SortAndFilterBar(filter: filter, showFilterSheet: $showFilterSheet)
                 }
                 .padding(.horizontal)
 
@@ -27,21 +32,25 @@ struct LocationSearchView: View {
                     Spacer()
                 } else {
                     RestaurantListView(
-                        restaurants: filteredRestaurants,
+                        title: "Results",
+                        restaurants: filter.apply(to: filteredRestaurants),
                         favorites: $favorites,
                         searchText: $searchText,
+                        showSheetOnTap: false,
                         onTap: { selected in
                             path.append(selected)
                         },
-                        showSearchBar: false
+                        showSearchBar: false,
+                        filter: filter,
+                        showFilterSheet: $showFilterSheet
                     )
                 }
             }
-            .onChange(of: cityText) { _ in
-                searchByCity()
-            }
-            .onChange(of: nameText) { _ in
-                filterByName()
+            .onChange(of: cityText) { _ in searchByCity() }
+            .onChange(of: nameText) { _ in filterByName() }
+            .sheet(isPresented: $showFilterSheet) {
+                FilterSheetView(filter: filter)
+                    .presentationDetents([.fraction(0.4)])
             }
             .navigationDestination(for: Restaurant.self) { restaurant in
                 BottomSheetView(restaurant: restaurant, favorites: $favorites)
@@ -65,7 +74,6 @@ struct LocationSearchView: View {
         .shadow(color: Color(.black).opacity(0.05), radius: 3, x: 0, y: 2)
     }
 
-
     private func searchByCity() {
         let trimmedCity = cityText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedCity.isEmpty else {
@@ -77,7 +85,6 @@ struct LocationSearchView: View {
         let api = RestaurantApi()
         api.getRestaurants(city: trimmedCity) { results in
             DispatchQueue.main.async {
-                // ✅ סינון לפי כתובת המסעדה (ולא לפי השם)
                 let cityLower = trimmedCity.lowercased()
                 self.allRestaurants = results.filter {
                     $0.address.lowercased().contains(cityLower)
@@ -97,4 +104,3 @@ struct LocationSearchView: View {
         }
     }
 }
-

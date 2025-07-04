@@ -6,46 +6,48 @@ struct MainTabView: View {
     @Binding var favorites: [Restaurant]
     @State private var restaurants: [Restaurant] = []
     @State private var didLoad = false
+    @State private var selectedRestaurant: Restaurant? = nil
+    @State private var selectedTab = 0
+    @State private var previousTab = 0
 
     var body: some View {
-        TabView {
-            ContentView(favorites: $favorites, isLoggedIn: $isLoggedIn)
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Home")
-                }
+        TabView(selection: $selectedTab) {
+            ContentView(
+                favorites: $favorites,
+                isLoggedIn: $isLoggedIn,
+                filter: RestaurantFilter()
+            )
+            .tabItem {
+                Image(systemName: "house.fill")
+                Text("Home")
+            }
 
-            FavoritesView(favorites: $favorites)
-                .tabItem {
-                    Image(systemName: "heart.fill")
-                    Text("Favorites")
-                }
+            FavoritesView(
+                favorites: $favorites,
+                filter: RestaurantFilter()
+            )
+            .tabItem {
+                Image(systemName: "heart.fill")
+                Text("Favorites")
+            }
 
-            LocationSearchView(favorites: $favorites)
-                .tabItem {
-                    Image(systemName: "mappin.and.ellipse")
-                    Text("Location")
-                }
-
-            MapView()
-                .tabItem {
-                        Label("Map", systemImage: "map")
-                    }
+            LocationSearchView(
+                favorites: $favorites,
+                //filter: RestaurantFilter()
+            )
+            .tabItem {
+                Image(systemName: "mappin.and.ellipse")
+                Text("Location")
+            }
         }
         .onAppear {
-                    if !didLoad {
-                        didLoad = true
-                        let api = RestaurantApi()
-                        api.getRestaurants(city: "tel aviv") { result in
-                            self.restaurants = result
-                        }
-                    }
+            if !didLoad {
+                didLoad = true
+                let api = RestaurantApi()
+                api.getRestaurants(city: "tel aviv") { result in
+                    self.restaurants = result
                 }
-    }
-}
-
-struct MapView: View {
-    var body: some View {
-        Text("Map View Placeholder")
+            }
+        }
     }
 }

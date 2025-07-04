@@ -11,10 +11,16 @@ struct RestaurantListView: View {
     @State private var selectedRestaurant: Restaurant? = nil
     @State private var showingSheet = false
     var showSearchBar: Bool = true
+    @ObservedObject var filter: RestaurantFilter
+    @Binding var showFilterSheet: Bool
 
     var body: some View {
         VStack {
-            searchBar
+            SearchAndFilterBar(
+                searchText: $searchText,
+                filter: filter,
+                showFilterSheet: $showFilterSheet
+            )
             restaurantCardsList
         }
     }
@@ -71,25 +77,4 @@ struct RestaurantListView: View {
         }
     }
 
-    private var searchBar: some View {
-        Group {
-            if showSearchBar {
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-
-                    TextField("Search restaurants...", text: $searchText)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                }
-                .padding(10)
-                .background(Color(UIColor { trait in
-                    trait.userInterfaceStyle == .dark ? .darkGray : .systemGray6
-                }))
-                .cornerRadius(20)
-                .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 3)
-                .padding(.horizontal)
-            }
-        }
-    }
 }

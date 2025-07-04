@@ -12,6 +12,7 @@
 		FC54C4C82E0D690800A499AF /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FC54C4C72E0D690800A499AF /* FirebaseAuth */; };
 		FC54C4CA2E0D690800A499AF /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = FC54C4C92E0D690800A499AF /* FirebaseFirestore */; };
 		FC54C4CC2E0D690800A499AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FC54C4CB2E0D690800A499AF /* FirebaseStorage */; };
+		FC81565A2E16F60F005F9F94 /* Sliders in Frameworks */ = {isa = PBXBuildFile; productRef = FC8156592E16F60F005F9F94 /* Sliders */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 				FC1390042E0D844200BA60E8 /* GoogleSignInSwift in Frameworks */,
 				FC54C4C82E0D690800A499AF /* FirebaseAuth in Frameworks */,
 				FC1390022E0D844200BA60E8 /* GoogleSignIn in Frameworks */,
+				FC81565A2E16F60F005F9F94 /* Sliders in Frameworks */,
 				FC54C4CA2E0D690800A499AF /* FirebaseFirestore in Frameworks */,
 				FC54C4CC2E0D690800A499AF /* FirebaseStorage in Frameworks */,
 			);
@@ -95,6 +97,7 @@
 				FC54C4CB2E0D690800A499AF /* FirebaseStorage */,
 				FC1390012E0D844200BA60E8 /* GoogleSignIn */,
 				FC1390032E0D844200BA60E8 /* GoogleSignInSwift */,
+				FC8156592E16F60F005F9F94 /* Sliders */,
 			);
 			productName = iosApp;
 			productReference = FC9214522E15860D00F1A14A /* foody.app */;
@@ -127,6 +130,7 @@
 			packageReferences = (
 				FC54C4C62E0D690800A499AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				FC1390002E0D844200BA60E8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				FC8156582E16F60F005F9F94 /* XCRemoteSwiftPackageReference "swiftui-sliders" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9DA97A82DC1472C00A4DA20;
@@ -408,6 +412,14 @@
 				minimumVersion = 11.15.0;
 			};
 		};
+		FC8156582E16F60F005F9F94 /* XCRemoteSwiftPackageReference "swiftui-sliders" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/spacenation/swiftui-sliders";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -435,6 +447,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FC54C4C62E0D690800A499AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		FC8156592E16F60F005F9F94 /* Sliders */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FC8156582E16F60F005F9F94 /* XCRemoteSwiftPackageReference "swiftui-sliders" */;
+			productName = Sliders;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

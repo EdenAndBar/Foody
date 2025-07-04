@@ -51,7 +51,7 @@ struct RestaurantCard: View {
 
                     if let category = category?.trimmingCharacters(in: .whitespacesAndNewlines),
                        !category.isEmpty {
-                        Text("📌\(category.capitalized)")
+                        Text(category.capitalized)
                             .font(.caption)
                             .foregroundColor(categoryColors[category.lowercased(), default: .blue])
                     }

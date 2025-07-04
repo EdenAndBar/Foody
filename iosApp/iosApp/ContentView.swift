@@ -2,6 +2,7 @@ import SwiftUI
 import Shared
 import CoreLocation
 import Foundation
+import Sliders
 
 struct ContentView: View {
     @State private var restaurants: [Restaurant] = []
@@ -13,6 +14,9 @@ struct ContentView: View {
     @State private var hasLoadedRestaurants = false
     @State private var searchText = ""
     @State private var showSidebar = false
+    @ObservedObject var filter: RestaurantFilter
+    @State private var showFilterSheet = false
+
 
     var isSearchMode: Bool {
         !searchText.trimmingCharacters(in: .whitespaces).isEmpty
@@ -40,7 +44,8 @@ struct ContentView: View {
                                 Button(action: {
                                     locationManager.refreshLocation()
                                 }) {
-                                    Label("Refresh location", systemImage: "location.circle")
+                                    Image(systemName: "arrow.clockwise")
+                                                    .font(.title2)
                                 }
                                 .padding(.trailing)
                             }
@@ -78,12 +83,16 @@ struct ContentView: View {
                         }
                     } else {
                         RestaurantListView(
-                            restaurants: restaurants,
+                            title: "Home",
+                            restaurants: filter.apply(to: restaurants),
                             favorites: $favorites,
                             searchText: $searchText,
+                            showSheetOnTap: true,
                             onTap: { restaurant in
                                 path.append(restaurant)
-                            }
+                            },
+                            filter: filter,
+                            showFilterSheet: $showFilterSheet
                         )
                     }
                 }
@@ -147,7 +156,7 @@ struct ContentView: View {
                             Spacer()
                         }
                         .frame(width: 200, height: .infinity)
-                        //.background(Color(UIColor.systemGray6))
+                        .background(Color(UIColor.systemGray6))
                         .offset(x: showSidebar ? 0 : -300)
                         .animation(.easeInOut(duration: 0.3), value: showSidebar)
                         .edgesIgnoringSafeArea(.all)
@@ -155,6 +164,10 @@ struct ContentView: View {
                     }
                     
                 }
+            }
+            .sheet(isPresented: $showFilterSheet) {
+                FilterSheetView(filter: filter)
+                    .presentationDetents([.fraction(0.4)])
             }
         }
         .onReceive(locationManager.$location.compactMap { $0 }) { coordinate in
