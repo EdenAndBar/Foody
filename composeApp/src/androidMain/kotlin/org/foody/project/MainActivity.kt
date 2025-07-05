@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
             AppNavHost(
                 navController = navController,
-                viewModel = viewModel  // כאן מעבירים את אותו מופע ViewModel!
+                viewModel = viewModel
             )
         }
     }

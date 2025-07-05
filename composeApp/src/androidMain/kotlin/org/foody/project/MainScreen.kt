@@ -196,7 +196,7 @@ fun MainScreen(
                     is BottomNavItem.Location -> {
                         LocationScreen(
                             viewModel = viewModel,
-                            onRestaurantClick = { navController.navigate("details/${it.id}") }
+                            onRestaurantClick = { navController.navigate("details/${it.id}?from=location") }
                         )
                     }
                     is BottomNavItem.Category -> {

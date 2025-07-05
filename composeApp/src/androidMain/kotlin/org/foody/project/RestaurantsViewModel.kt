@@ -105,6 +105,7 @@ class RestaurantsViewModel : ViewModel() {
             viewModelScope.launch {
                 api.getRestaurantsByCity(city) { results ->
                     locationSearchResults = results
+                    apiResult = results
                     isLoading = false
                 }
             }
