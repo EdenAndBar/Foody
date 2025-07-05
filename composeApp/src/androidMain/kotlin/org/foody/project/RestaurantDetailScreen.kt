@@ -26,6 +26,9 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import places.*
 import androidx.compose.ui.text.font.FontWeight
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.foundation.background
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,16 +42,17 @@ fun RestaurantDetailScreen(
     val uriHandler = LocalUriHandler.current
     var visibleReviewsCount by remember { mutableStateOf(3) }
 
-    var userName by remember { mutableStateOf("") }
+    val firebaseUser = FirebaseAuth.getInstance().currentUser
+    val displayName = firebaseUser?.displayName ?: ""
+
     var userComment by remember { mutableStateOf("") }
     var userRating by remember { mutableStateOf(0) }
     val customReviews = remember { mutableStateListOf<GoogleReview>() }
 
     LaunchedEffect(restaurant.placeId) {
-        coroutineScope.launch {
-            details = getRestaurantDetails(restaurant.placeId)
-        }
+        details = getRestaurantDetails(restaurant.placeId)
     }
+
 
     Scaffold(
         topBar = {
@@ -188,66 +192,27 @@ fun RestaurantDetailScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // שדות הוספת ביקורת
-            Text(
-                text = "Add Your Review",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = userName,
-                onValueChange = { userName = it },
-                label = { Text("Your Name") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = userComment,
-                onValueChange = { userComment = it },
-                label = { Text("Your Comment") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Your Rating:")
-                Spacer(modifier = Modifier.width(8.dp))
-                (1..5).forEach { star ->
-                    Icon(
-                        imageVector = if (userRating >= star) Icons.Default.Star else Icons.Default.StarBorder,
-                        contentDescription = null,
-                        tint = Color(0xFFFFD700),
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable { userRating = star }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = {
-                    if (userName.isNotBlank() && userComment.isNotBlank() && userRating > 0) {
+            AddReviewSection(
+                userFullName = displayName,
+                userComment = userComment,
+                onUserCommentChange = { userComment = it },
+                userRating = userRating,
+                onUserRatingChange = { userRating = it },
+                onSubmit = {
+                    if (displayName.isNotBlank() && userComment.isNotBlank() && userRating > 0) {
                         val newReview = GoogleReview(
-                            author_name = userName,
+                            author_name = displayName,
                             rating = userRating,
                             text = userComment
                         )
                         customReviews.add(0, newReview)
-                        userName = ""
                         userComment = ""
                         userRating = 0
                     }
                 },
-                enabled = userName.isNotBlank() && userComment.isNotBlank() && userRating > 0,
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Submit Review")
-            }
+                isSubmitEnabled = displayName.isNotBlank() && userComment.isNotBlank() && userRating > 0
+            )
+
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -277,14 +242,14 @@ fun RestaurantDetailScreen(
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
                                     text = review.author_name,
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                                     color = Color.Black
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = "${review.rating}",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                         color = Color.Black
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
@@ -293,7 +258,7 @@ fun RestaurantDetailScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = review.text,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
                                     color = Color.DarkGray
                                 )
                             }
@@ -394,6 +359,116 @@ fun StarRating(rating: Double, maxStars: Int = 5) {
                 tint = Color(0xFFFFD700),
                 modifier = Modifier.size(16.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun AddReviewSection(
+    userFullName: String,
+    userComment: String,
+    onUserCommentChange: (String) -> Unit,
+    userRating: Int,
+    onUserRatingChange: (Int) -> Unit,
+    onSubmit: () -> Unit,
+    isSubmitEnabled: Boolean
+) {
+    val background = Color.White
+    val textPrimary = Color(0xFF1C1C1E)
+    val textSecondary = Color(0xFF636366)
+    val inputBackground = Color(0xFFF2F2F7)
+    val buttonGray = Color(0xFFC7C7CC)
+    val buttonTextColor = textPrimary
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, shape = RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Add Your Review",
+            style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+            color = textPrimary,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Your Name:",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Normal
+                ),
+                color = Color(0xFF636366)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = userFullName,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = Color(0xFF1C1C1E)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = userComment,
+            onValueChange = onUserCommentChange,
+            label = { Text("Your Comment", color = textSecondary, fontSize = 14.sp) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = inputBackground,
+                unfocusedContainerColor = inputBackground,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = textPrimary,
+                focusedLabelColor = textSecondary,
+                unfocusedLabelColor = textSecondary
+            ),
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Your Rating:", fontSize = 15.sp, color = textSecondary)
+            Spacer(modifier = Modifier.width(8.dp))
+            (1..5).forEach { star ->
+                Icon(
+                    imageVector = if (userRating >= star) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = null,
+                    tint = Color(0xFFFFD700),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { onUserRatingChange(star) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onSubmit,
+            enabled = isSubmitEnabled,
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.align(Alignment.End),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = buttonGray,
+                contentColor = buttonTextColor,
+                disabledContainerColor = Color(0xFFE5E5EA),
+                disabledContentColor = buttonTextColor.copy(alpha = 0.5f)
+            ),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+        ) {
+            Text("Submit", fontSize = 16.sp)
         }
     }
 }
