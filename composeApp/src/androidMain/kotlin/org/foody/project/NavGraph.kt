@@ -111,6 +111,16 @@ fun AppNavHost(
         composable("profile") {
             ProfileScreen(onBackClick = { navController.popBackStack() })
         }
+
+        composable("location") {
+            LocationScreen(
+                viewModel = viewModel,
+                onRestaurantClick = { restaurant ->
+                    navController.navigate("details/${restaurant.id}")
+                }
+            )
+        }
+
     }
 }
 

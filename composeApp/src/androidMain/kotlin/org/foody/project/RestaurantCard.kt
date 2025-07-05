@@ -34,7 +34,7 @@ fun RestaurantCard(
             .padding(15.dp)
             .clickable { onTap(restaurant) },
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp) // ✨ הצללה כאן
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column {
             Box(

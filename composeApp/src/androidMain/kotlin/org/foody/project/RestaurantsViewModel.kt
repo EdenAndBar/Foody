@@ -31,6 +31,12 @@ class RestaurantsViewModel : ViewModel() {
 
     private val api = RestaurantApiService()
 
+    var locationSearchResults by mutableStateOf<List<Restaurant>>(emptyList())
+        private set
+
+    var isLocationSearchActive by mutableStateOf(false)
+        private set
+
     // טוען מסעדות לפי מיקום (קבל מיקום כ-string "latitude,longitude")
     fun loadInitialRestaurants(location: String) {
         viewModelScope.launch {
@@ -92,4 +98,19 @@ class RestaurantsViewModel : ViewModel() {
         apiResult = updatedList
     }
 
+    fun loadRestaurantsByCity(city: String) {
+        if (city.isNotBlank()) {
+            isLoading = true
+            isLocationSearchActive = true
+            viewModelScope.launch {
+                api.getRestaurantsByCity(city) { results ->
+                    locationSearchResults = results
+                    isLoading = false
+                }
+            }
+        } else {
+            isLocationSearchActive = false
+            locationSearchResults = emptyList()
+        }
+    }
 }

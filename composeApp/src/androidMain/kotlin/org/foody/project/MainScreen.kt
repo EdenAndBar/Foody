@@ -194,12 +194,9 @@ fun MainScreen(
                         )
                     }
                     is BottomNavItem.Location -> {
-                        Text(
-                            "Filter by Location",
-                            modifier = Modifier.fillMaxSize(),
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        LocationScreen(
+                            viewModel = viewModel,
+                            onRestaurantClick = { navController.navigate("details/${it.id}") }
                         )
                     }
                     is BottomNavItem.Category -> {
