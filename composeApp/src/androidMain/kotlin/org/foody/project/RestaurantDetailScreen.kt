@@ -28,7 +28,7 @@ import places.*
 import androidx.compose.ui.text.font.FontWeight
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.foundation.background
-
+import androidx.compose.ui.unit.TextUnit
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +56,9 @@ fun RestaurantDetailScreen(
 
     Scaffold(
         topBar = {
+            // שמור את מצב הלב בלחיצה (נניח בהתחלה לא מלא)
+            var isFavorite by remember { mutableStateOf(false) }
+
             TopAppBar(
                 title = {
                     Text(
@@ -70,6 +73,20 @@ fun RestaurantDetailScreen(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",
                             tint = Color.Black
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            isFavorite = !isFavorite
+                            // TODO: כאן תוכל להוסיף לוגיקה להוספה או הסרה מהמועדפים
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                            tint = if (isFavorite) Color.Red else Color.Gray
                         )
                     }
                 },
@@ -128,34 +145,6 @@ fun RestaurantDetailScreen(
             val isOpenNow = currentDetails?.opening_hours?.open_now
 
             if (openingHoursText != null && openingHoursText.isNotEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = Color(0xFF4A4A4A),
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Opening Hours - ",
-                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
-                        color = Color.Black
-                    )
-                    if (isOpenNow != null) {
-                        Text(
-                            text = if (isOpenNow) "OPEN NOW" else "CLOSED",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
-                            color = if (isOpenNow) Color(0xFF66BB6A) else Color(0xFFF44336),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -163,6 +152,36 @@ fun RestaurantDetailScreen(
                     color = Color.White
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccessTime,
+                                contentDescription = null,
+                                tint = Color(0xFF4A4A4A),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Opening Hours - ",
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                                color = Color.Black
+                            )
+                            if (isOpenNow != null) {
+                                Text(
+                                    text = if (isOpenNow) "OPEN NOW" else "CLOSED",
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                                    color = if (isOpenNow) Color(0xFF66BB6A) else Color(0xFFF44336),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // פירוט הימים והשעות
                         openingHoursText.forEach { line ->
                             val parts = line.split(": ", limit = 2)
                             val dayPart = parts.getOrNull(0) ?: line
@@ -171,13 +190,13 @@ fun RestaurantDetailScreen(
                             Row {
                                 Text(
                                     text = "$dayPart: ",
-                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 15.sp),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 16.sp),
                                     color = Color.DarkGray,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = hoursPart,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 15.sp),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 16.sp),
                                     color = Color.DarkGray
                                 )
                             }
@@ -187,6 +206,7 @@ fun RestaurantDetailScreen(
                     }
                 }
             }
+
 
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -221,7 +241,7 @@ fun RestaurantDetailScreen(
             if (allReviews.isNotEmpty()) {
                 Text(
                     text = "Reviews",
-                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
                     color = Color.Black,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -242,14 +262,14 @@ fun RestaurantDetailScreen(
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
                                     text = review.author_name,
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
                                     color = Color.Black
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = "${review.rating}",
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 15.sp),
                                         color = Color.Black
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
@@ -258,7 +278,7 @@ fun RestaurantDetailScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = review.text,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 15.sp),
                                     color = Color.DarkGray
                                 )
                             }
@@ -271,15 +291,20 @@ fun RestaurantDetailScreen(
                         onClick = {
                             visibleReviewsCount = minOf(visibleReviewsCount + 3, allReviews.size)
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4A4A4A),
-                            contentColor = Color.White
-                        ),
+                        enabled = true,
+                        shape = RoundedCornerShape(24.dp),
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(vertical = 8.dp)
+                            .padding(top = 8.dp, bottom = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFC7C7CC),
+                            contentColor = Color(0xFF1C1C1E),
+                            disabledContainerColor = Color(0xFFE5E5EA),
+                            disabledContentColor = Color(0xFF1C1C1E).copy(alpha = 0.5f)
+                        ),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
                     ) {
-                        Text(text = "show more reviews")
+                        Text("Show More Reviews", fontSize = 15.sp)
                     }
                 }
             }
@@ -291,7 +316,8 @@ fun RestaurantDetailScreen(
 fun InfoRow(
     icon: ImageVector,
     label: String,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    fontSize: TextUnit = 17.sp
 ) {
     val clickableColor = Color(0xFF4A4A4A)
     val defaultIconColor = Color(0xFF666666)
@@ -339,7 +365,7 @@ fun StarRating(rating: Double, maxStars: Int = 5) {
                 imageVector = Icons.Default.Star,
                 contentDescription = null,
                 tint = Color(0xFFFFD700),
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
 
@@ -348,7 +374,7 @@ fun StarRating(rating: Double, maxStars: Int = 5) {
                 imageVector = Icons.Default.StarHalf,
                 contentDescription = null,
                 tint = Color(0xFFFFD700),
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
 
@@ -357,7 +383,7 @@ fun StarRating(rating: Double, maxStars: Int = 5) {
                 imageVector = Icons.Default.StarBorder,
                 contentDescription = null,
                 tint = Color(0xFFFFD700),
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
     }
@@ -380,95 +406,103 @@ fun AddReviewSection(
     val buttonGray = Color(0xFFC7C7CC)
     val buttonTextColor = textPrimary
 
-    Column(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, shape = RoundedCornerShape(16.dp))
-            .padding(16.dp)
+            .padding(top = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = background,
+        shadowElevation = 4.dp  // <-- מוסיף הצללה
     ) {
-        Text(
-            text = "Add Your Review",
-            style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
-            color = textPrimary,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
         Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Your Name:",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color(0xFF636366)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = userFullName,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = Color(0xFF1C1C1E)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = userComment,
-            onValueChange = onUserCommentChange,
-            label = { Text("Your Comment", color = textSecondary, fontSize = 14.sp) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = inputBackground,
-                unfocusedContainerColor = inputBackground,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = textPrimary,
-                focusedLabelColor = textSecondary,
-                unfocusedLabelColor = textSecondary
-            ),
-            shape = RoundedCornerShape(12.dp)
-        )
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Add Your Review",
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                color = textPrimary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Your Rating:", fontSize = 15.sp, color = textSecondary)
-            Spacer(modifier = Modifier.width(8.dp))
-            (1..5).forEach { star ->
-                Icon(
-                    imageVector = if (userRating >= star) Icons.Default.Star else Icons.Default.StarBorder,
-                    contentDescription = null,
-                    tint = Color(0xFFFFD700),
-                    modifier = Modifier
-                        .size(22.dp)
-                        .clickable { onUserRatingChange(star) }
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Your Name:",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = textSecondary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = userFullName,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = textPrimary
                 )
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = onSubmit,
-            enabled = isSubmitEnabled,
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.align(Alignment.End),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = buttonGray,
-                contentColor = buttonTextColor,
-                disabledContainerColor = Color(0xFFE5E5EA),
-                disabledContentColor = buttonTextColor.copy(alpha = 0.5f)
-            ),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-        ) {
-            Text("Submit", fontSize = 16.sp)
+            TextField(
+                value = userComment,
+                onValueChange = onUserCommentChange,
+                label = { Text("Your Comment", color = textSecondary, fontSize = 14.sp) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = inputBackground,
+                    unfocusedContainerColor = inputBackground,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = textPrimary,
+                    focusedLabelColor = textSecondary,
+                    unfocusedLabelColor = textSecondary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Your Rating:", fontSize = 15.sp, color = textSecondary)
+                Spacer(modifier = Modifier.width(8.dp))
+                (1..5).forEach { star ->
+                    Icon(
+                        imageVector = if (userRating >= star) Icons.Default.Star else Icons.Default.StarBorder,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clickable { onUserRatingChange(star) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = onSubmit,
+                enabled = isSubmitEnabled,
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.align(Alignment.End),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = buttonGray,
+                    contentColor = buttonTextColor,
+                    disabledContainerColor = Color(0xFFE5E5EA),
+                    disabledContentColor = buttonTextColor.copy(alpha = 0.5f)
+                ),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+            ) {
+                Text("Submit", fontSize = 15.sp)
+            }
         }
     }
 }
