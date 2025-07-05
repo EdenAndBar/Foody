@@ -25,7 +25,8 @@ fun RestaurantCard(
     restaurant: Restaurant,
     isFavorite: Boolean,
     onFavoriteClick: (Restaurant) -> Unit,
-    onTap: (Restaurant) -> Unit
+    onTap: (Restaurant) -> Unit,
+    isOpenNow: Boolean? = null
 ) {
     Card(
         modifier = Modifier
@@ -36,14 +37,35 @@ fun RestaurantCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp) // ✨ הצללה כאן
     ) {
         Column {
-            AsyncImage(
-                model = restaurant.photoUrl,
-                contentDescription = "Restaurant photo",
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
+                    .height(200.dp)
+            ) {
+                AsyncImage(
+                    model = restaurant.photoUrl,
+                    contentDescription = "Restaurant photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                restaurant.isOpenNow?.let { openNow ->
+                    val labelColor = if (openNow) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    val labelText = if (openNow) "Open Now" else "Closed"
+
+                    Text(
+                        text = labelText,
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(labelColor, shape = RoundedCornerShape(24.dp))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
+                }
+            }
 
             Column(
                 modifier = Modifier
@@ -88,7 +110,7 @@ fun RestaurantCard(
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                            tint = Color.Red,
+                            tint = if (isFavorite) Color.Red else Color.Gray,
                             modifier = Modifier.size(40.dp)
                         )
                     }
