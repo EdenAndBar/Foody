@@ -99,13 +99,20 @@ class RestaurantsViewModel : ViewModel() {
     }
 
     fun loadRestaurantsByCity(city: String) {
-        if (city.isNotBlank()) {
+        val trimmedCity = city.trim().lowercase()
+
+        if (trimmedCity.isNotBlank()) {
             isLoading = true
             isLocationSearchActive = true
             viewModelScope.launch {
                 api.getRestaurantsByCity(city) { results ->
-                    locationSearchResults = results
-                    apiResult = results
+                    // סינון לפי הכתובת בלבד
+                    val filtered = results.filter {
+                        it.address.lowercase().contains(trimmedCity)
+                    }
+
+                    locationSearchResults = filtered
+                    apiResult = filtered
                     isLoading = false
                 }
             }
@@ -114,4 +121,5 @@ class RestaurantsViewModel : ViewModel() {
             locationSearchResults = emptyList()
         }
     }
+
 }
