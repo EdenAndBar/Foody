@@ -8,27 +8,42 @@ struct RestaurantListView: View {
     @Binding var searchText: String
     var showSheetOnTap: Bool = true
     let onTap: (Restaurant) -> Void
-    @State private var selectedRestaurant: Restaurant? = nil
-    @State private var showingSheet = false
     var showSearchBar: Bool = true
     @ObservedObject var filter: RestaurantFilter
     @Binding var showFilterSheet: Bool
 
     var body: some View {
         VStack {
-            SearchAndFilterBar(
-                searchText: $searchText,
-                filter: filter,
-                showFilterSheet: $showFilterSheet
-            )
-            restaurantCardsList
+            if showSearchBar {
+                SearchAndFilterBar(
+                    searchText: $searchText,
+                    filter: filter,
+                    showFilterSheet: $showFilterSheet
+                )
+            }
+
+            if restaurants.isEmpty {
+                Spacer()
+                if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Text("No restaurants found for \"\(searchText)\"")
+                        .foregroundColor(.gray)
+                        .padding(.top, 50)
+                } else {
+                    Text("No favorite restaurants yet")
+                        .foregroundColor(.gray)
+                        .padding(.top, 50)
+                }
+                Spacer()
+            } else {
+                restaurantCardsList
+            }
         }
     }
     
     private var restaurantCardsList: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                ForEach(restaurants, id: \.id) { restaurant in
+                ForEach(restaurants, id: \.placeId) { restaurant in
                     RestaurantCard(
                         name: restaurant.name,
                         photoUrl: restaurant.photoUrl,
@@ -57,19 +72,6 @@ struct RestaurantListView: View {
                                 Label("Add to Favorites", systemImage: "heart.fill")
                             }
                         }
-                    }
-                }
-
-                if restaurants.isEmpty {
-                    Spacer()
-                    if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                        Text("No restaurants found for \"\(searchText)\"")
-                            .foregroundColor(.gray)
-                            .padding(.top, 50)
-                    } else {
-                        Text("No favorite restaurants yet")
-                            .foregroundColor(.gray)
-                            .padding(.top, 50)
                     }
                 }
             }

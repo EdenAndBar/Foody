@@ -2,13 +2,12 @@ import SwiftUI
 import Shared
 
 struct LocationSearchView: View {
-    @State private var cityText = ""
-    @State private var nameText = ""
     @State private var searchText = ""
     @State private var allRestaurants: [Restaurant] = []
     @State private var filteredRestaurants: [Restaurant] = []
     @Binding var favorites: [Restaurant]
     @State private var path: [Restaurant] = []
+    @State private var citySuggestions: [String] = []
 
     @StateObject private var filter = RestaurantFilter()
     @State private var showFilterSheet = false
@@ -16,14 +15,37 @@ struct LocationSearchView: View {
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 12) {
-                VStack(spacing: 8) {
-                    HStack(spacing: 12) {
-                        searchFieldStyled(systemImage: "building.2.crop.circle", placeholder: "Enter city...", text: $cityText)
-                        searchFieldStyled(systemImage: "fork.knife.circle", placeholder: "Restaurant name", text: $nameText)
-                    }
-                    SortAndFilterBar(filter: filter, showFilterSheet: $showFilterSheet)
-                }
+                SearchAndFilterBar(
+                    searchText: $searchText,
+                    filter: filter,
+                    showFilterSheet: $showFilterSheet,
+                    isLocationMode: true
+                )
                 .padding(.horizontal)
+                
+                if !citySuggestions.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(citySuggestions, id: \.self) { suggestion in
+                            Button(action: {
+                                searchText = suggestion
+                                citySuggestions = []
+                                searchByCity()
+                            }) {
+                                Text(suggestion)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            Divider()
+                        }
+                    }
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(radius: 2)
+                    .padding(.horizontal)
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.2), value: citySuggestions)
+                }
 
                 if filteredRestaurants.isEmpty {
                     Spacer()
@@ -46,8 +68,21 @@ struct LocationSearchView: View {
                     )
                 }
             }
-            .onChange(of: cityText) { _ in searchByCity() }
-            .onChange(of: nameText) { _ in filterByName() }
+//            .onChange(of: searchText) { _ in searchByCity() }
+            .onChange(of: searchText) { newValue in
+                let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.isEmpty {
+                    citySuggestions = []
+                    filteredRestaurants = []
+                    return
+                }
+
+                RestaurantApiService().getCitySuggestions(query: trimmed) { suggestions in
+                    DispatchQueue.main.async {
+                        citySuggestions = suggestions
+                    }
+                }
+            }
             .sheet(isPresented: $showFilterSheet) {
                 FilterSheetView(filter: filter)
                     .presentationDetents([.fraction(0.4)])
@@ -57,25 +92,9 @@ struct LocationSearchView: View {
             }
         }
     }
-
-    private func searchFieldStyled(systemImage: String, placeholder: String, text: Binding<String>) -> some View {
-        HStack {
-            Image(systemName: systemImage)
-                .foregroundColor(Color(.systemGray))
-            TextField(placeholder, text: text)
-                .foregroundColor(.primary)
-                .font(.subheadline)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-        }
-        .padding(12)
-        .background(Color(.systemGray6))
-        .cornerRadius(20)
-        .shadow(color: Color(.black).opacity(0.05), radius: 3, x: 0, y: 2)
-    }
-
+    
     private func searchByCity() {
-        let trimmedCity = cityText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCity = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedCity.isEmpty else {
             self.allRestaurants = []
             self.filteredRestaurants = []
@@ -89,17 +108,7 @@ struct LocationSearchView: View {
                 self.allRestaurants = results.filter {
                     $0.address.lowercased().contains(cityLower)
                 }
-                self.filterByName()
-            }
-        }
-    }
-
-    private func filterByName() {
-        if nameText.isEmpty {
-            self.filteredRestaurants = allRestaurants
-        } else {
-            self.filteredRestaurants = allRestaurants.filter {
-                $0.name.localizedCaseInsensitiveContains(nameText)
+                self.filteredRestaurants = self.allRestaurants
             }
         }
     }

@@ -115,6 +115,20 @@ struct BottomSheetView: View {
                     }
                     Text("Website").font(.footnote).foregroundColor(.purple)
                 }
+                if let phone = restaurant.phoneNumber, !phone.isEmpty {
+                    VStack {
+                        Button(action: {
+                            if let url = URL(string: "tel://\(phone.filter { $0.isNumber })") {
+                                UIApplication.shared.open(url)
+                            }
+                        }) {
+                            Image(systemName: "phone")
+                                .font(.system(size: 24))
+                                .foregroundColor(.teal)
+                        }
+                        Text("Call").font(.footnote).foregroundColor(.teal)
+                    }
+                }
             }
             .padding(.top, 10)
 

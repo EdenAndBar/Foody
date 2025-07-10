@@ -37,7 +37,8 @@ data class Restaurant(
     val types: List<String> = emptyList(),
     val isOpenNow: Boolean? = null,
     val openingHoursText: List<String>? = null,
-    val category: String
+    val category: String,
+    val phoneNumber: String?
 )
 
 @Serializable
@@ -50,7 +51,9 @@ data class PlaceDetailsResult(
     val url: String? = null,
     val website: String? = null,
     val reviews: List<GoogleReview>? = null,
-    val opening_hours: OpeningHours? = null
+    val opening_hours: OpeningHours? = null,
+    @SerialName("formatted_phone_number")
+    val formattedPhoneNumber: String? = null
 )
 
 @Serializable
@@ -65,6 +68,15 @@ data class OpeningHours(
     val open_now: Boolean? = null,
     @SerialName("weekday_text")
     val weekdayText: List<String>? = null
+)
+
+@Serializable
+data class PlaceAutocompleteResponse(val predictions: List<PlacePrediction>)
+
+@Serializable
+data class PlacePrediction(
+    val description: String,
+    val place_id: String
 )
 
 private val json = Json {
@@ -127,8 +139,8 @@ object RestaurantApi {
             val address = place.vicinity ?: place.formattedAddress ?: "No location info"
             val id = "restaurant-${name.hashCode()}-${photoReference?.hashCode() ?: 0}"
             val placeId = place.place_id
-
             val details = getRestaurantDetails(placeId)
+            val phone = details?.formattedPhoneNumber
 
             if (photoReference != null) {
                 val restaurant = Restaurant(
@@ -141,7 +153,8 @@ object RestaurantApi {
                     types = place.types ?: emptyList(),
                     isOpenNow = place.opening_hours?.open_now,
                     openingHoursText = details?.opening_hours?.weekdayText,
-                    category = guessCategoryFromName(place.name ?: "").lowercase()
+                    category = guessCategoryFromName(place.name ?: "").lowercase(),
+                    phoneNumber = phone,
                 )
                 if (query == null || restaurant.name.contains(query, ignoreCase = true)) {
                     restaurant
@@ -159,7 +172,8 @@ suspend fun getRestaurantDetails(placeId: String): PlaceDetailsResult? {
     val response: HttpResponse =
         client.get("https://maps.googleapis.com/maps/api/place/details/json") {
             parameter("place_id", placeId)
-            parameter("fields", "website,url,reviews,opening_hours")
+           // parameter("fields", "website,url,reviews,opening_hours")
+            parameter("fields", "website,url,reviews,opening_hours,formatted_phone_number")
             parameter("language", "en")
             parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
         }
@@ -187,5 +201,27 @@ private fun guessCategoryFromName(name: String): String {
         name.contains("vegan", ignoreCase = true) -> "Vegan"
         name.contains("grill", ignoreCase = true) -> "Grill"
         else -> ""
+    }
+}
+
+suspend fun autocompleteCities(query: String): List<String> {
+    val client = getHttpClient()
+    val response: HttpResponse = client.get("https://maps.googleapis.com/maps/api/place/autocomplete/json") {
+        parameter("input", query)
+        parameter("types", "(cities)")
+        parameter("language", "en")
+        parameter("components", "country:il")
+        parameter("key", "AIzaSyD_EBDLvG2nhD9qDkyAp9Tm6k8-fFVfKL0")
+    }
+
+    val body = response.bodyAsText()
+
+    return try {
+        val parsed = json.decodeFromString<PlaceAutocompleteResponse>(body)
+        parsed.predictions.map { prediction ->
+            prediction.description.split(",").first().trim()
+        }
+    } catch (e: Exception) {
+        emptyList()
     }
 }

@@ -7,7 +7,7 @@ struct RestaurantCard: View {
     let rating: Float
     let isOpenNow: Bool?
     let category: String?
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ZStack(alignment: .topTrailing) {

@@ -4,15 +4,19 @@ struct SearchAndFilterBar: View {
     @Binding var searchText: String
     @ObservedObject var filter: RestaurantFilter
     @Binding var showFilterSheet: Bool
+    var isLocationMode: Bool = false // ✅ חדש
 
     var body: some View {
         HStack(spacing: 8) {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
-                TextField("Search restaurants...", text: $searchText)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                TextField(
+                    isLocationMode ? "Search city..." : "Search restaurants...",
+                    text: $searchText
+                )
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
             }
             .padding(10)
             .background(Color(UIColor.systemGray6))
