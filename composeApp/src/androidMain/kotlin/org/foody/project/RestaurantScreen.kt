@@ -103,7 +103,7 @@ fun SearchBar(
 fun RestaurantScreen(
     navController: NavHostController,
     viewModel: RestaurantsViewModel,
-    onRestaurantClick: (Restaurant) -> Unit
+    onRestaurantClick: (String) -> Unit
 ) {
 
     val restaurants = viewModel.apiResult
@@ -165,7 +165,7 @@ fun RestaurantScreen(
                         restaurant = restaurant,
                         isFavorite = favorites.contains(restaurant),
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
-                        onTap = { onRestaurantClick(it) }
+                        onTap = { onRestaurantClick(restaurant.id) }
                     )
                 }
             }

@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import places.Restaurant
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.material3.Text
+
 
 @Composable
 fun AppNavHost(
@@ -26,7 +28,6 @@ fun AppNavHost(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val restaurants by remember { derivedStateOf { viewModel.apiResult } }
 
     // בקשת הרשאת מיקום
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -60,12 +61,12 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = if (FirebaseAuth.getInstance().currentUser != null) "list" else "login"
+        startDestination = if (FirebaseAuth.getInstance().currentUser != null) "mainWrapper" else "login"
     ) {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate("list") {
+                    navController.navigate("mainWrapper") {
                         popUpTo("login") { inclusive = true }
                     }
                 },
@@ -77,7 +78,7 @@ fun AppNavHost(
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate("list") {
+                    navController.navigate("mainWrapper") {
                         popUpTo("register") { inclusive = true }
                     }
                 },
@@ -87,55 +88,41 @@ fun AppNavHost(
             )
         }
 
-        composable("list") {
+        composable("mainWrapper") {
             MainScreen(
                 navController = navController,
                 viewModel = viewModel,
                 onLogout = {
+                    // מה לעשות כשמתבצע logout? למשל:
                     navController.navigate("login") {
-                        popUpTo("list") { inclusive = true }
+                        popUpTo(0) // מנקה את הסטאק
                     }
-                },
-                onRestaurantClick = { restaurant ->
-                    navController.navigate("details/${restaurant.id}?from=list")
                 }
             )
         }
 
 
-        composable("details/{restaurantId}?from={from}") { backStackEntry ->
+        composable("details/{restaurantId}") { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getString("restaurantId")
-            val from = backStackEntry.arguments?.getString("from") ?: "list" // ברירת מחדל - main screen
-            val restaurant = restaurants.find { it.id == restaurantId }
-            restaurant?.let {
+            val restaurant =
+                viewModel.apiResult.find { it.id == restaurantId }
+                    ?: viewModel.locationSearchResults.find { it.id == restaurantId }
+
+            if (restaurant != null) {
                 RestaurantDetailScreen(
-                    restaurant = it,
-                    onBackClick = {
-                        if (from == "location") {
-                            navController.navigate("location") {
-                                popUpTo("details/$restaurantId") { inclusive = true }
-                            }
-                        } else {
-                            navController.popBackStack()
-                        }
-                    }
+                    restaurant = restaurant,
+                    onBackClick = { navController.popBackStack() }
                 )
+            } else {
+                // אופציונלי: מסך fallback אם המסעדה לא נמצאה
+                Text("Restaurant not found")
             }
         }
+
 
         composable("profile") {
             ProfileScreen(onBackClick = { navController.popBackStack() })
         }
-
-        composable("location") {
-            LocationScreen(
-                viewModel = viewModel,
-                onRestaurantClick = { restaurant ->
-                    navController.navigate("details/${restaurant.id}?from=location")
-                }
-            )
-        }
-
     }
 }
 

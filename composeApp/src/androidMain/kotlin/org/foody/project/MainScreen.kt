@@ -14,32 +14,33 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import places.Restaurant
 import android.annotation.SuppressLint
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
-
-
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
-    object Main : BottomNavItem("Main", Icons.Default.Home)
-    object Favorites : BottomNavItem("Favorites", Icons.Default.Favorite)
-    object Location : BottomNavItem("Location", Icons.Default.LocationOn)
-    object Category : BottomNavItem("Category", Icons.Default.Menu)
+    object Main : BottomNavItem("main", Icons.Default.Home)
+    object Favorites : BottomNavItem("favorites", Icons.Default.Favorite)
+    object Location : BottomNavItem("location", Icons.Default.LocationOn)
+    object Category : BottomNavItem("category", Icons.Default.Menu)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavHostController,
+    navController: NavHostController,        // ה־NavController הראשי, לניווט ל־details ו־profile
     viewModel: RestaurantsViewModel,
     onLogout: () -> Unit,
-    onRestaurantClick: (Restaurant) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
-    var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Main) }
+    val bottomNavController = rememberNavController()  // NavController פנימי ל־BottomBar
+
     val user = FirebaseAuth.getInstance().currentUser
     val displayName = user?.displayName ?: ""
     val firstName = displayName.split(" ").firstOrNull() ?: ""
@@ -48,7 +49,7 @@ fun MainScreen(
 
     // קריאה לקבלת מיקום והטענת מסעדות
     GetCurrentLocation { location ->
-        if (currentLocation == null) { // כדי להפעיל פעם אחת בלבד
+        if (currentLocation == null) {
             currentLocation = location
             viewModel.loadInitialRestaurants(location)
         }
@@ -101,7 +102,7 @@ fun MainScreen(
 
                     DrawerItem(icon = Icons.Default.Info, label = "About Foody") {
                         coroutineScope.launch { drawerState.close() }
-                        // TODO: Add settings screen here if needed
+                        // TODO: Settings screen
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -138,82 +139,110 @@ fun MainScreen(
                 )
             },
             bottomBar = {
-                NavigationBar(
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF1C1C1E)
-                ) {
-                    listOf(
-                        BottomNavItem.Main,
-                        BottomNavItem.Favorites,
-                        BottomNavItem.Location,
-                        BottomNavItem.Category
-                    ).forEach { item ->
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    imageVector = item.icon,
-                                    contentDescription = item.label,
-                                    tint = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = item.label,
-                                    fontSize = 12.sp,
-                                    color = if (selectedItem == item) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
-                                )
-                            },
-                            selected = selectedItem == item,
-                            onClick = {
-                                selectedItem = item
-                                // לא צריך לעשות כאן כלום לגבי רשימות, ה-ViewModel מטפל בכך
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = Color(0xFFF2F2F7)
-                            )
-                        )
-                    }
-                }
+                BottomNavigationBar(navController = bottomNavController)
             }
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
-                when (selectedItem) {
-                    is BottomNavItem.Main -> {
+                NavHost(
+                    navController = bottomNavController,
+                    startDestination = BottomNavItem.Main.label.lowercase()
+                ) {
+                    composable(BottomNavItem.Main.label.lowercase()) {
                         RestaurantScreen(
-                            navController = navController,
-                            viewModel = viewModel,  // מעבירים את ה-ViewModel
-                            onRestaurantClick = { navController.navigate("details/${it.id}") }
+                            navController = navController, // נווט ל-details דרך ה-root
+                            viewModel = viewModel,
+                            onRestaurantClick = { id -> navController.navigate("details/$id") }
                         )
                     }
-                    is BottomNavItem.Favorites -> {
-                        Text(
-                            "Favorites Screen",
-                            modifier = Modifier.fillMaxSize(),
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                    composable(BottomNavItem.Favorites.label.lowercase()) {
+                        // החלף ל־FavoritesScreen אמיתי אם יש לך, כרגע טקסט לדוגמה
+                        Box(
+                            Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Favorites Screen",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
-                    is BottomNavItem.Location -> {
+                    composable(BottomNavItem.Location.label.lowercase()) {
                         LocationScreen(
                             viewModel = viewModel,
-                            onRestaurantClick = { navController.navigate("details/${it.id}?from=location") }
+                            onRestaurantClick = { id -> navController.navigate("details/$id") }
                         )
                     }
-                    is BottomNavItem.Category -> {
-                        Text(
-                            "Filter by Category",
-                            modifier = Modifier.fillMaxSize(),
-                            color = Color.Gray,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                    composable(BottomNavItem.Category.label.lowercase()) {
+                        Box(
+                            Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Filter by Category",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
+@Composable
+fun BottomNavigationBar(navController: NavHostController) {
+    val items = listOf(
+        BottomNavItem.Main,
+        BottomNavItem.Favorites,
+        BottomNavItem.Location,
+        BottomNavItem.Category
+    )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    NavigationBar(
+        containerColor = Color.White,
+        contentColor = Color(0xFF1C1C1E)
+    ) {
+        items.forEach { item ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label,
+                        tint = if (currentRoute == item.label.lowercase()) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        fontSize = 12.sp,
+                        color = if (currentRoute == item.label.lowercase()) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                    )
+                },
+                selected = currentRoute == item.label.lowercase(),
+                onClick = {
+                    if (currentRoute != item.label.lowercase()) {
+                        navController.navigate(item.label.lowercase()) {
+                            // שמירת מצב ומניעת איפוס
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                        }
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0xFFF2F2F7)
+                )
+            )
+        }
+    }
+}
+
 
 @Composable
 fun DrawerItem(

@@ -25,7 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 @Composable
 fun LocationScreen(
     viewModel: RestaurantsViewModel,
-    onRestaurantClick: (Restaurant) -> Unit
+    onRestaurantClick: (String) -> Unit
 ) {
     val searchQuery = viewModel.searchQuery
     val isLoading = viewModel.isLoading
@@ -38,12 +38,13 @@ fun LocationScreen(
 
     LaunchedEffect(searchQuery) {
         val trimmed = searchQuery.trim()
-        if (trimmed.isNotEmpty()) {
+        if (!viewModel.hasSearchedCity && viewModel.shouldFetchSuggestions && trimmed.isNotEmpty()) {
             viewModel.fetchCitySuggestions(trimmed)
         } else {
             viewModel.clearCitySuggestions()
         }
     }
+
     LaunchedEffect(Unit) {
         viewModel.lastCitySearched?.let { lastCity ->
             if (lastCity.isNotBlank() && viewModel.locationSearchResults.isEmpty()) {
@@ -62,10 +63,9 @@ fun LocationScreen(
             onSearchChanged = { viewModel.updateSearchQuery(it) },
             onSearchSubmit = { viewModel.loadRestaurantsByCity(searchQuery) },
             onClearClick = {
-                viewModel.clearSearch(emptyList())
-                // נניח כאן גם ננקה את החיפוש של location:
-                viewModel.loadRestaurantsByCity("") // כדי לנקות תוצאות
+                viewModel.clearCitySearch()
             }
+
         )
 
         if (citySuggestions.isNotEmpty()) {
@@ -144,7 +144,7 @@ fun LocationScreen(
                             restaurant = restaurant,
                             isFavorite = favorites.contains(restaurant),
                             onFavoriteClick = { viewModel.toggleFavorite(it) },
-                            onTap = { onRestaurantClick(it) }
+                            onTap = { onRestaurantClick(it.id) }
                         )
                     }
                 }

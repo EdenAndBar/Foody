@@ -46,6 +46,9 @@ class RestaurantsViewModel : ViewModel() {
     var lastCitySearched by mutableStateOf<String?>(null)
         private set
 
+    var hasSearchedCity by mutableStateOf(false)
+        private set
+
 
     // טוען מסעדות לפי מיקום (קבל מיקום כ-string "latitude,longitude")
     fun loadInitialRestaurants(location: String) {
@@ -113,7 +116,7 @@ class RestaurantsViewModel : ViewModel() {
         if (trimmedCity.isNotBlank()) {
             isLoading = true
             isLocationSearchActive = true
-            lastCitySearched = city // ⬅️ שימור
+            lastCitySearched = city
             viewModelScope.launch {
                 api.getRestaurantsByCity(city) { results ->
                     val filtered = results.filter {
@@ -121,14 +124,17 @@ class RestaurantsViewModel : ViewModel() {
                     }
                     locationSearchResults = filtered
                     apiResult = filtered
+                    hasSearchedCity = true
                     isLoading = false
                 }
             }
         } else {
             isLocationSearchActive = false
             locationSearchResults = emptyList()
+            hasSearchedCity = false
         }
     }
+
 
     fun fetchCitySuggestions(query: String) {
         if (!shouldFetchSuggestions) return
@@ -149,4 +155,14 @@ class RestaurantsViewModel : ViewModel() {
     fun clearCitySuggestions() {
         citySuggestions = emptyList()
     }
+
+    fun clearCitySearch() {
+        isLocationSearchActive = false
+        locationSearchResults = emptyList()
+        lastCitySearched = null
+        hasSearchedCity = false
+        searchQuery = ""
+        clearCitySuggestions()
+    }
+
 }
