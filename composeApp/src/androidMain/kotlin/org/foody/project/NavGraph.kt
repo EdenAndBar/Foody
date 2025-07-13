@@ -86,6 +86,7 @@ fun AppNavHost(
                 }
             )
         }
+
         composable("list") {
             MainScreen(
                 navController = navController,
@@ -94,20 +95,34 @@ fun AppNavHost(
                     navController.navigate("login") {
                         popUpTo("list") { inclusive = true }
                     }
+                },
+                onRestaurantClick = { restaurant ->
+                    navController.navigate("details/${restaurant.id}?from=list")
                 }
             )
         }
 
-        composable("details/{restaurantId}") { backStackEntry ->
+
+        composable("details/{restaurantId}?from={from}") { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getString("restaurantId")
+            val from = backStackEntry.arguments?.getString("from") ?: "list" // ברירת מחדל - main screen
             val restaurant = restaurants.find { it.id == restaurantId }
             restaurant?.let {
                 RestaurantDetailScreen(
                     restaurant = it,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = {
+                        if (from == "location") {
+                            navController.navigate("location") {
+                                popUpTo("details/$restaurantId") { inclusive = true }
+                            }
+                        } else {
+                            navController.popBackStack()
+                        }
+                    }
                 )
             }
         }
+
         composable("profile") {
             ProfileScreen(onBackClick = { navController.popBackStack() })
         }
@@ -116,7 +131,7 @@ fun AppNavHost(
             LocationScreen(
                 viewModel = viewModel,
                 onRestaurantClick = { restaurant ->
-                    navController.navigate("details/${restaurant.id}")
+                    navController.navigate("details/${restaurant.id}?from=location")
                 }
             )
         }

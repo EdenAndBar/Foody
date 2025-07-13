@@ -37,6 +37,16 @@ class RestaurantsViewModel : ViewModel() {
     var isLocationSearchActive by mutableStateOf(false)
         private set
 
+    var citySuggestions by mutableStateOf<List<String>>(emptyList())
+        private set
+
+    var shouldFetchSuggestions by mutableStateOf(true)
+        private set
+
+    var lastCitySearched by mutableStateOf<String?>(null)
+        private set
+
+
     // טוען מסעדות לפי מיקום (קבל מיקום כ-string "latitude,longitude")
     fun loadInitialRestaurants(location: String) {
         viewModelScope.launch {
@@ -100,17 +110,15 @@ class RestaurantsViewModel : ViewModel() {
 
     fun loadRestaurantsByCity(city: String) {
         val trimmedCity = city.trim().lowercase()
-
         if (trimmedCity.isNotBlank()) {
             isLoading = true
             isLocationSearchActive = true
+            lastCitySearched = city // ⬅️ שימור
             viewModelScope.launch {
                 api.getRestaurantsByCity(city) { results ->
-                    // סינון לפי הכתובת בלבד
                     val filtered = results.filter {
                         it.address.lowercase().contains(trimmedCity)
                     }
-
                     locationSearchResults = filtered
                     apiResult = filtered
                     isLoading = false
@@ -122,4 +130,23 @@ class RestaurantsViewModel : ViewModel() {
         }
     }
 
+    fun fetchCitySuggestions(query: String) {
+        if (!shouldFetchSuggestions) return
+        viewModelScope.launch {
+            api.getCitySuggestions(query) { suggestions ->
+                citySuggestions = suggestions
+            }
+        }
+    }
+
+    fun pauseSuggestionsFetching() {
+        shouldFetchSuggestions = false
+    }
+    fun resumeSuggestionsFetching() {
+        shouldFetchSuggestions = true
+    }
+
+    fun clearCitySuggestions() {
+        citySuggestions = emptyList()
+    }
 }

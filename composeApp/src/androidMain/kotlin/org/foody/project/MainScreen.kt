@@ -34,7 +34,8 @@ sealed class BottomNavItem(val label: String, val icon: ImageVector) {
 fun MainScreen(
     navController: NavHostController,
     viewModel: RestaurantsViewModel,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onRestaurantClick: (Restaurant) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()

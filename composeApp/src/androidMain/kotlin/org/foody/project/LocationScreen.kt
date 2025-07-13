@@ -18,7 +18,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import places.Restaurant
-import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 @Composable
 fun LocationScreen(
@@ -30,6 +32,25 @@ fun LocationScreen(
     val favorites = viewModel.favorites
     val isLocationSearchActive = viewModel.isLocationSearchActive
     val locationSearchResults = viewModel.locationSearchResults
+
+    val citySuggestions = viewModel.citySuggestions
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(searchQuery) {
+        val trimmed = searchQuery.trim()
+        if (trimmed.isNotEmpty()) {
+            viewModel.fetchCitySuggestions(trimmed)
+        } else {
+            viewModel.clearCitySuggestions()
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.lastCitySearched?.let { lastCity ->
+            if (lastCity.isNotBlank() && viewModel.locationSearchResults.isEmpty()) {
+                viewModel.loadRestaurantsByCity(lastCity)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -47,6 +68,47 @@ fun LocationScreen(
             }
         )
 
+        if (citySuggestions.isNotEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            ) {
+                Column(modifier = Modifier.background(Color.White)) {
+                    citySuggestions.forEach { suggestion ->
+                        Column {
+                            TextButton(
+                                onClick = {
+                                    viewModel.pauseSuggestionsFetching()
+                                    viewModel.updateSearchQuery(suggestion)
+                                    viewModel.clearCitySuggestions()
+                                    viewModel.loadRestaurantsByCity(suggestion)
+
+                                    coroutineScope.launch {
+                                        delay(300)
+                                        viewModel.resumeSuggestionsFetching()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = suggestion,
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp)
+                                        .fillMaxWidth(),
+                                    color = Color.Black
+                                )
+                            }
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+
         if (isLoading) {
             Box(
                 modifier = Modifier
@@ -58,7 +120,6 @@ fun LocationScreen(
             }
         } else {
             if (!isLocationSearchActive) {
-                // כאן לא להציג כלום או טקסט ריק
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

@@ -56,7 +56,7 @@ class RestaurantApiService : CoroutineScope {
         }
     }
 
-    fun getCitySuggestions(query: String, callback: (List<String>) -> Unit) {
+     fun getCitySuggestions(query: String, callback: (List<String>) -> Unit) {
         launch {
             try {
                 val suggestions = places.autocompleteCities(query)
