@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var showSidebar = false
     @ObservedObject var filter: RestaurantFilter
     @State private var showFilterSheet = false
-
+    @EnvironmentObject var session: UserSession
 
     var isSearchMode: Bool {
         !searchText.trimmingCharacters(in: .whitespaces).isEmpty
@@ -182,6 +182,12 @@ struct ContentView: View {
             } else if !isSearchMode, let coordinate = locationManager.location {
                 let latLng = "\(coordinate.latitude),\(coordinate.longitude)"
                 loadNearbyRestaurants(location: latLng)
+            }
+            FirebaseFavoritesManager().fetchFavorites(for: session.uid) { favorites in
+                DispatchQueue.main.async {
+                    self.favorites = favorites
+                    self.session.favorites = favorites
+                }
             }
         }
         .onChange(of: searchText) { newValue in

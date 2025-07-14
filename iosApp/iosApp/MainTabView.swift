@@ -9,6 +9,7 @@ struct MainTabView: View {
     @State private var selectedRestaurant: Restaurant? = nil
     @State private var selectedTab = 0
     @State private var previousTab = 0
+    @EnvironmentObject var session: UserSession
 
     var body: some View {
         TabView(selection: $selectedTab) {

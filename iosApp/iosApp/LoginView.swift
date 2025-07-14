@@ -45,6 +45,7 @@ struct LoginView: View {
     @State private var password = ""
     @State private var errorMessage: String?
     @State private var showSignup = false
+    @EnvironmentObject var session: UserSession
 
     @Binding var isLoggedIn: Bool
     var onLoginSuccess: () -> Void
@@ -132,16 +133,31 @@ struct LoginView: View {
         }
     }
 
+//    private func handleLogin() {
+//        errorMessage = nil
+//        Auth.auth().signIn(withEmail: email, password: password) { result, error in
+//            if let error = error {
+//                errorMessage = error.localizedDescription
+//            } else {
+//                onLoginSuccess()
+//            }
+//        }
+//    }
+    
     private func handleLogin() {
         errorMessage = nil
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             if let error = error {
                 errorMessage = error.localizedDescription
-            } else {
-                onLoginSuccess()
+            } else if let user = result?.user {
+                print("✅ Logged in as: \(user.uid)")  // ← ה־UID
+                self.session.updateFromFirebaseUser(user)
+                self.isLoggedIn = true
+                self.onLoginSuccess()
             }
         }
     }
+
 
     private func signInWithGoogle() {
         guard let presentingVC = UIApplication.shared.connectedScenes

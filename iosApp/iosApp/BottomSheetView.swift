@@ -9,18 +9,22 @@ extension KotlinBoolean {
 }
 struct BottomSheetView: View {
     let restaurant: Restaurant
-    @Binding var favorites: [Restaurant]  // מקור האמת
-
+    @Binding var favorites: [Restaurant]
+    @EnvironmentObject var session: UserSession
+    let favoritesManager = FirebaseFavoritesManager()
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = RestaurantDetailsViewModel()
     @State private var userReviews: [GoogleReviewUI] = []
     @State private var isAddingReview = false
+    let reviewManager = FirebaseReviewManager()
 
     private func toggleFavorite() {
         if isFavorite {
             favorites.removeAll { $0.placeId == restaurant.placeId }
+            favoritesManager.removeFavorite(for: session.uid, restaurant: restaurant)
         } else {
             favorites.append(restaurant)
+            favoritesManager.addFavorite(for: session.uid, restaurant: restaurant)
         }
     }
 
@@ -176,11 +180,30 @@ struct BottomSheetView: View {
         .onAppear {
             Task {
                 await viewModel.fetchDetails(for: restaurant.placeId)
+                reviewManager.fetchReviews(for: restaurant.placeId) { fetched in
+                    DispatchQueue.main.async {
+                        self.userReviews = fetched.map {
+                            GoogleReviewUI(
+                                rating: $0.rating,
+                                author: $0.authorName,
+                                text: $0.comment
+                            )
+                        }
+                    }
+                }
             }
         }
         .sheet(isPresented: $isAddingReview) {
             AddReviewView(isPresented: $isAddingReview) { newReview in
                 userReviews.append(newReview)
+
+                reviewManager.addReview(
+                    for: restaurant.placeId,
+                    userId: session.uid,
+                    authorName: session.email, // או firstName אם יש לך
+                    rating: newReview.rating,
+                    comment: newReview.text
+                )
             }
         }
     }

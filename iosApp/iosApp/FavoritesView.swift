@@ -8,6 +8,7 @@ struct FavoritesView: View {
         @State private var path = NavigationPath()
         @State private var searchText = ""
         @State private var showFilterSheet = false
+        @EnvironmentObject var session: UserSession
 
     var body: some View {
         NavigationStack(path: $path) {

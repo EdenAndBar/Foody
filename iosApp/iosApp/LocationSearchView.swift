@@ -8,6 +8,7 @@ struct LocationSearchView: View {
     @Binding var favorites: [Restaurant]
     @State private var path: [Restaurant] = []
     @State private var citySuggestions: [String] = []
+    @EnvironmentObject var session: UserSession
 
     @StateObject private var filter = RestaurantFilter()
     @State private var showFilterSheet = false

@@ -11,6 +11,7 @@ struct RestaurantListView: View {
     var showSearchBar: Bool = true
     @ObservedObject var filter: RestaurantFilter
     @Binding var showFilterSheet: Bool
+    @EnvironmentObject var session: UserSession
 
     var body: some View {
         VStack {
@@ -59,24 +60,32 @@ struct RestaurantListView: View {
                         onTap(restaurant)
                     }
                     .contextMenu {
-                        if favorites.contains(restaurant) {
-                            Button {
-                                favorites.removeAll { $0 == restaurant }
-                            } label: {
-                                Label("Remove from Favorites", systemImage: "heart.slash")
-                            }
-                        } else {
-                            Button {
-                                favorites.append(restaurant)
-                            } label: {
-                                Label("Add to Favorites", systemImage: "heart.fill")
-                            }
-                        }
+                        contextMenuButtons(for: restaurant)
                     }
                 }
             }
             .padding()
         }
     }
-
+    
+    @ViewBuilder
+    private func contextMenuButtons(for restaurant: Restaurant) -> some View {
+        if favorites.contains(where: { $0.placeId == restaurant.placeId }) {
+            Button {
+                favorites.removeAll { $0.placeId == restaurant.placeId }
+                FirebaseFavoritesManager().removeFavorite(for: session.uid, restaurant: restaurant)
+            } label: {
+                Label("Remove from Favorites", systemImage: "heart.slash")
+            }
+        } else {
+            Button {
+                favorites.append(restaurant)
+                FirebaseFavoritesManager().addFavorite(for: session.uid, restaurant: restaurant)
+            } label: {
+                Label("Add to Favorites", systemImage: "heart.fill")
+            }
+        }
+    }
 }
+
+

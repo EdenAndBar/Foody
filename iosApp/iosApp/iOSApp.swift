@@ -9,13 +9,17 @@
 //
 //    var body: some Scene {
 //        WindowGroup {
-//            MainTabView(isLoggedIn: $isLoggedIn, favorites: $favorites)
-//                .onAppear {
-//                    isLoggedIn = Auth.auth().currentUser != nil
+//            if isLoggedIn {
+//                MainTabView(isLoggedIn: $isLoggedIn, favorites: $favorites)
+//            } else {
+//                LoginView(isLoggedIn: $isLoggedIn) {
+//                    isLoggedIn = true
 //                }
+//            }
 //        }
 //    }
 //}
+//
 
 import SwiftUI
 import FirebaseAuth
@@ -25,15 +29,18 @@ struct iOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @State private var isLoggedIn = false
     @State private var favorites: [Restaurant] = []
+    @StateObject private var session = UserSession()
 
     var body: some Scene {
         WindowGroup {
             if isLoggedIn {
                 MainTabView(isLoggedIn: $isLoggedIn, favorites: $favorites)
+                    .environmentObject(session)
             } else {
                 LoginView(isLoggedIn: $isLoggedIn) {
                     isLoggedIn = true
                 }
+                .environmentObject(session)
             }
         }
     }
