@@ -12,42 +12,66 @@ struct AddReviewView: View {
     @State private var fullName: String = ""
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Text("Add Your Review")
-                .font(.headline)
+                .font(.title2)
+                .bold()
+                .foregroundColor(.primary)
 
-            TextField("Your name", text: $newAuthor)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
+            IconTextField(iconName: "person", placeholder: "Your name", text: $newAuthor)
 
-            VStack {
+            VStack(spacing: 8) {
                 Text("Rating: \(Int(newRating))")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
                 Slider(value: $newRating, in: 1...5, step: 1)
+                    .accentColor(.blue)
+                    .padding(.horizontal)
             }
 
-            TextField("Write your review...", text: $newText, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
-                .padding()
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(20)
 
-            Button("Submit") {
+                TextEditor(text: $newText)
+                    .padding(12)
+                    .foregroundColor(.primary)
+                    .background(Color.clear)
+                    .frame(height: 120)
+            }
+            .padding(.horizontal)
+            .frame(maxWidth: 350)
+
+            Button(action: {
                 let review = GoogleReviewUI(
                     rating: newRating,
                     author: newAuthor.isEmpty ? "Anonymous" : newAuthor,
-                    text: newText
+                    text: newText,
+                    uid: Auth.auth().currentUser?.uid
                 )
                 onSubmit(review)
                 isPresented = false
                 newAuthor = ""
                 newText = ""
                 newRating = 5.0
+            }) {
+                Text("Submit")
+                    .frame(width: 150, height: 44)
+                    .background(newText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray : Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(20)
             }
-            .buttonStyle(.borderedProminent)
+            .disabled(newText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
             Button("Cancel", role: .cancel) {
                 isPresented = false
             }
+            .foregroundColor(.red)
         }
-        .padding()
+        .padding(.top, 40)
         .onAppear(perform: loadUserName)
     }
 
@@ -67,3 +91,4 @@ struct AddReviewView: View {
         }
     }
 }
+

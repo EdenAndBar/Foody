@@ -22,9 +22,24 @@ class FirebaseReviewManager {
         ]
         
         db.collection("restaurants")
+          .document(placeId)
+          .collection("reviews")
+    }
+
+    func deleteReview(for placeId: String, userId: String, reviewId: String) {
+        let db = Firestore.firestore()
+        let docRef = db.collection("restaurants")
             .document(placeId)
             .collection("reviews")
-            .addDocument(data: reviewData)
+            .document(reviewId)
+
+        docRef.delete { error in
+            if let error = error {
+                print("Error deleting review: \(error)")
+            } else {
+                print("Review deleted successfully.")
+            }
+        }
     }
 
     func fetchReviews(for placeId: String, completion: @escaping ([Review]) -> Void) {
