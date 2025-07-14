@@ -88,7 +88,7 @@ struct LoginView: View {
                         HStack(spacing: 16) {
                             Button(action: handleLogin) {
                                 Text("Login")
-                                    .frame(width: 130, height: 44)
+                                    .frame(width: 150, height: 44)
                                     .padding(.vertical, 4)
                                     .background(email.isEmpty || password.isEmpty ? Color.gray : Color.blue)
                                     .foregroundColor(.white)
@@ -106,7 +106,7 @@ struct LoginView: View {
                                             .scaledToFit()
                                             .frame(width: 18, height: 18)
                                 }
-                                .frame(width: 170, height: 44)
+                                .frame(width: 150, height: 44)
                                 .padding(.vertical, 4)
                                 .background(Color.white.opacity(0.8))
                                 .overlay(
@@ -132,17 +132,6 @@ struct LoginView: View {
             }
         }
     }
-
-//    private func handleLogin() {
-//        errorMessage = nil
-//        Auth.auth().signIn(withEmail: email, password: password) { result, error in
-//            if let error = error {
-//                errorMessage = error.localizedDescription
-//            } else {
-//                onLoginSuccess()
-//            }
-//        }
-//    }
     
     private func handleLogin() {
         errorMessage = nil
@@ -157,7 +146,6 @@ struct LoginView: View {
             }
         }
     }
-
 
     private func signInWithGoogle() {
         guard let presentingVC = UIApplication.shared.connectedScenes
