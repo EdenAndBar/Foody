@@ -24,6 +24,7 @@ struct SignupView: View {
             .opacity(1.0)
             .offset(x: -20)
             .ignoresSafeArea()
+        
         ZStack {
             VStack {
                 Spacer().frame(height: 350)
@@ -65,12 +66,24 @@ struct SignupView: View {
         }
     }
 
+    // ✅ פונקציית בדיקת סיסמה
+    func isValidPassword(_ password: String) -> Bool {
+        let hasMinLength = password.count >= 6
+        let hasLetter = password.range(of: "[A-Za-z]", options: .regularExpression) != nil
+        let hasNumber = password.range(of: "[0-9]", options: .regularExpression) != nil
+        return hasMinLength && hasLetter && hasNumber
+    }
+
     func registerUser() {
         errorMessage = nil
+        
+        guard isValidPassword(password) else {
+            errorMessage = "Password must be at least 6 characters and include both letters and numbers."
+            return
+        }
 
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
-                print("❌ Registration error: \(error.localizedDescription)")
                 errorMessage = "Signup failed: \(error.localizedDescription)"
             } else if let user = result?.user {
                 let db = Firestore.firestore()
@@ -94,3 +107,4 @@ struct SignupView: View {
         }
     }
 }
+

@@ -1,86 +1,132 @@
+//import SwiftUI
+//
+//struct AboutUsView: View {
+//    @Binding var showSidebar: Bool
+//    @Environment(\.dismiss) var dismiss
+//
+//    var body: some View {
+//        ZStack {
+//            Image("backgroundImage")
+//                .resizable()
+//                .aspectRatio(contentMode: .fill)
+//                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+//                .opacity(1.0)
+//                .offset(x: -20)
+//                .ignoresSafeArea()
+//
+//            ScrollView {
+//                VStack(spacing: 24) {
+//                    Spacer().frame(height: 250)
+//
+//                    Text("Hungry?\nNot sure what to eat or where to go?\nThat’s exactly why we’re here!")
+//                        .font(.title3)
+//                        .multilineTextAlignment(.center)
+//                        .padding(.horizontal)
+//
+//                    Divider()
+//
+//                    Text("""
+//Foody helps you discover restaurants around you, based on your location or a city you choose.
+//Feeling adventurous?\n Check out our 🏆 Top 10 recommended spots!
+//""")
+//                        .multilineTextAlignment(.center)
+//                        .padding(.horizontal)
+//
+//                    Divider()
+//
+//                    VStack(spacing: 8) {
+//                        Text("Love a restaurant?\nAdd it to your favorites ❤️\nChanged your mind?\nRemove it with a tap 💔")
+//                            .font(.headline)
+//                            .multilineTextAlignment(.center)
+//                    }
+//                    .padding()
+//                    .padding(.horizontal)
+//                    Spacer()
+//                }
+//            }
+//        }
+//        .navigationBarBackButtonHidden(true)
+//        .toolbar {
+//            ToolbarItem(placement: .navigationBarLeading) {
+//                Button(action: {
+//                    showSidebar = true
+//                    dismiss()
+//                }) {
+//                    Label("Back", systemImage: "chevron.backward")
+//                }
+//            }
+//        }
+//    }
+//}
+
 import SwiftUI
 
 struct AboutUsView: View {
-    @State private var fadeIn = false
-    @State private var scaleUp = false
     @Binding var showSidebar: Bool
-    var onDismiss: () -> Void = {} 
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Title
-                Text("🍽️ Welcome to Foody")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+        ZStack {
+            Image("backgroundImage")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .opacity(1.0)
+                .offset(x: -20)
+                .ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: 24) {
+                    Spacer().frame(height: 300)
+
+                    VStack(spacing: 8) {
+                        Text("Hungry?")
+                        Text("Not sure what to eat or where to go?")
+                        Text("That’s exactly why we’re here!")
+                    }
+                    .font(.title3)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 40)
-                    .opacity(fadeIn ? 1 : 0)
-                    .animation(.easeIn(duration: 1), value: fadeIn)
-
-                // Description
-                Text("""
-Foody is your smart restaurant companion 🍔🍣🍕.
-
-We help you discover the best places to eat around you – with live status (Open/Closed), authentic reviews, photos, ratings, opening hours, and real-time info – all in one app.
-
-No more guessing. Just great food.
-""")
-                    .font(.body)
-                    .multilineTextAlignment(.leading)
                     .padding(.horizontal)
-                    .opacity(fadeIn ? 1 : 0)
-                    .animation(.easeIn(duration: 1.4).delay(0.3), value: fadeIn)
 
-                // Feature Card
-                VStack(spacing: 16) {
-                    Image(systemName: "fork.knife.circle.fill")
-                        .resizable()
-                        .frame(width: 80, height: 80)
-                        .foregroundColor(.orange)
+                    Divider()
 
-                    Text("Everything you need to know about restaurants – in one place")
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
+                    VStack(spacing: 8) {
+                        Text("Foody helps you discover restaurants around you,")
+                        Text("based on your location or a city you choose.")
+                        Text("Feeling adventurous?")
+                        Text("Check out our 🏆 Top 10 recommended spots!")
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
 
-                    Text("Discover. Taste. Save your favorites. ❤️")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
+                    Divider()
+
+                    VStack(spacing: 8) {
+                        Text("Love a restaurant?")
+                            .font(.headline)
+                        Text("Add it to your favorites ❤️")
+                            .font(.headline)
+                        Text("Changed your mind?")
+                            .font(.headline)
+                        Text("Remove it with a tap 💔")
+                            .font(.headline)
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding()
+                    .padding(.horizontal)
+
+                    Spacer()
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(20)
-                .shadow(radius: 6)
-                .scaleEffect(scaleUp ? 1 : 0.8)
-                .animation(.spring(response: 0.6, dampingFraction: 0.5).delay(0.6), value: scaleUp)
-
-                Spacer()
             }
-            .padding(.bottom, 40)
         }
-        .background(LinearGradient(
-            gradient: Gradient(colors: [Color.white, Color(.systemGray6)]),
-            startPoint: .top,
-            endPoint: .bottom
-        ))
-        .onAppear {
-            fadeIn = true
-            scaleUp = true
-        }
-        .navigationTitle("About Us")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true) 
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
                     showSidebar = true
                     dismiss()
                 }) {
-                    HStack {
-                        Image(systemName: "chevron.backward")
-                        Text("Back")
-                    }
+                    Label("Back", systemImage: "chevron.backward")
                 }
             }
         }
