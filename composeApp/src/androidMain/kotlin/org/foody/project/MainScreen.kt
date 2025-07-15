@@ -22,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.saveable.rememberSaveable
 
 sealed class BottomNavItem(val label: String, val icon: ImageVector) {
     object Main : BottomNavItem("main", Icons.Default.Home)
@@ -45,13 +46,18 @@ fun MainScreen(
     val displayName = user?.displayName ?: ""
     val firstName = displayName.split(" ").firstOrNull() ?: ""
 
-    var currentLocation by remember { mutableStateOf<String?>(null) }
+    var currentLocation by rememberSaveable { mutableStateOf<String?>(null) }
 
     // קריאה לקבלת מיקום והטענת מסעדות
+    LaunchedEffect(currentLocation) {
+        if (currentLocation != null && viewModel.mainApiResult.isEmpty()) {
+            viewModel.loadInitialRestaurants(currentLocation!!)
+        }
+    }
+
     GetCurrentLocation { location ->
         if (currentLocation == null) {
             currentLocation = location
-            viewModel.loadInitialRestaurants(location)
         }
     }
 
