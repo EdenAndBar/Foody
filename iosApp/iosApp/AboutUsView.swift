@@ -4,6 +4,7 @@ struct AboutUsView: View {
     @State private var fadeIn = false
     @State private var scaleUp = false
     @Binding var showSidebar: Bool
+    var onDismiss: () -> Void = {} 
     @Environment(\.dismiss) var dismiss
 
     var body: some View {

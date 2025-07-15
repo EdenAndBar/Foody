@@ -25,7 +25,8 @@ struct MainTabView: View {
 
             FavoritesView(
                 favorites: $favorites,
-                filter: RestaurantFilter()
+                filter: RestaurantFilter(),
+                isLoggedIn: $isLoggedIn
             )
             .tabItem {
                 Image(systemName: "heart.fill")
@@ -34,7 +35,8 @@ struct MainTabView: View {
 
             LocationSearchView(
                 favorites: $favorites,
-                //filter: RestaurantFilter()
+                //filter: RestaurantFilter(),
+                isLoggedIn: $isLoggedIn
             )
             .tabItem {
                 Image(systemName: "mappin.and.ellipse")

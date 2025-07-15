@@ -4,10 +4,28 @@ struct SearchAndFilterBar: View {
     @Binding var searchText: String
     @ObservedObject var filter: RestaurantFilter
     @Binding var showFilterSheet: Bool
-    var isLocationMode: Bool = false // ✅ חדש
+    var isLocationMode: Bool = false
+
+    @Environment(\.showSidebarBinding) private var showSidebar
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
+            // ☰ כפתור סיידבר
+            if let showSidebar = showSidebar {
+                Button {
+                    withAnimation {
+                        showSidebar.wrappedValue.toggle()
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.title2)
+                        .padding(8)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(10)
+                }
+            }
+
+            // 🔍 שדה חיפוש
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
@@ -21,7 +39,9 @@ struct SearchAndFilterBar: View {
             .padding(10)
             .background(Color(UIColor.systemGray6))
             .cornerRadius(20)
+            .frame(maxWidth: .infinity)
 
+            // ⇅ מיון
             Menu {
                 Section("Sort by") {
                     Button("Name") { filter.sortField = .name }
@@ -31,8 +51,10 @@ struct SearchAndFilterBar: View {
                     Button {
                         filter.sortDirection = filter.sortDirection == .ascending ? .descending : .ascending
                     } label: {
-                        Label(filter.sortDirection == .ascending ? "Ascending ↑" : "Descending ↓",
-                              systemImage: filter.sortDirection == .ascending ? "arrow.up" : "arrow.down")
+                        Label(
+                            filter.sortDirection == .ascending ? "Ascending ↑" : "Descending ↓",
+                            systemImage: filter.sortDirection == .ascending ? "arrow.up" : "arrow.down"
+                        )
                     }
                 }
             } label: {
@@ -42,6 +64,7 @@ struct SearchAndFilterBar: View {
                     .cornerRadius(8)
             }
 
+            // ⚙️ סינון
             Button {
                 showFilterSheet = true
             } label: {
@@ -52,5 +75,6 @@ struct SearchAndFilterBar: View {
             }
         }
         .padding(.horizontal)
+        .padding(.top, 8)
     }
 }
