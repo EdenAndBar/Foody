@@ -98,20 +98,18 @@ fun SearchBar(
     }
 }
 
-
 @Composable
 fun RestaurantScreen(
     navController: NavHostController,
     viewModel: RestaurantsViewModel,
     onRestaurantClick: (String) -> Unit
 ) {
-
-    val restaurants = viewModel.apiResult
-    val searchQuery = viewModel.searchQuery
+    val restaurants = viewModel.mainSearchResults.ifEmpty { viewModel.mainApiResult }
+    val searchQuery = viewModel.mainSearchQuery
     val isLoading = viewModel.isLoading
-    val searchResults = viewModel.searchResults
+    val searchResults = viewModel.mainSearchResults
     val favorites = viewModel.favorites
-    val originalRestaurants = viewModel.originalRestaurants
+    val originalRestaurants = viewModel.mainOriginalRestaurants
 
     Column(
         modifier = Modifier
@@ -120,9 +118,9 @@ fun RestaurantScreen(
     ) {
         SearchBar(
             searchQuery = searchQuery,
-            onSearchChanged = { viewModel.updateSearchQuery(it) },
+            onSearchChanged = { viewModel.updateMainSearchQuery(it) },
             onSearchSubmit = { viewModel.searchRestaurants() },
-            onClearClick = { viewModel.clearSearch(originalRestaurants) }
+            onClearClick = { viewModel.clearMainSearch() }
         )
 
         if (searchResults.isNotEmpty()) {
@@ -133,7 +131,7 @@ fun RestaurantScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { viewModel.clearSearch(originalRestaurants) }
+                    onClick = { viewModel.clearMainSearch() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,

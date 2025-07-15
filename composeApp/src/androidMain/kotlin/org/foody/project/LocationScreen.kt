@@ -27,15 +27,15 @@ fun LocationScreen(
     viewModel: RestaurantsViewModel,
     onRestaurantClick: (String) -> Unit
 ) {
-    val searchQuery = viewModel.searchQuery
+    val searchQuery = viewModel.locationSearchQuery
     val isLoading = viewModel.isLoading
     val favorites = viewModel.favorites
     val isLocationSearchActive = viewModel.isLocationSearchActive
     val locationSearchResults = viewModel.locationSearchResults
-
     val citySuggestions = viewModel.citySuggestions
     val coroutineScope = rememberCoroutineScope()
 
+    // הצעות לעיר
     LaunchedEffect(searchQuery) {
         val trimmed = searchQuery.trim()
         if (!viewModel.hasSearchedCity && viewModel.shouldFetchSuggestions && trimmed.isNotEmpty()) {
@@ -45,9 +45,10 @@ fun LocationScreen(
         }
     }
 
+    // טעינה מחדש רק אם לא חזרו תוצאות
     LaunchedEffect(Unit) {
         viewModel.lastCitySearched?.let { lastCity ->
-            if (lastCity.isNotBlank() && viewModel.locationSearchResults.isEmpty()) {
+            if (lastCity.isNotBlank() && locationSearchResults.isEmpty()) {
                 viewModel.loadRestaurantsByCity(lastCity)
             }
         }
@@ -58,22 +59,22 @@ fun LocationScreen(
             .fillMaxSize()
             .background(Color(0xFFF2F2F7))
     ) {
+        // שורת חיפוש לעיר
         SearchBar(
             searchQuery = searchQuery,
-            onSearchChanged = { viewModel.updateSearchQuery(it) },
-            onSearchSubmit = { viewModel.loadRestaurantsByCity(searchQuery) },
-            onClearClick = {
-                viewModel.clearCitySearch()
-            }
-
+            onSearchChanged = { viewModel.updateLocationSearchQuery(it) },
+            onSearchSubmit = {
+                viewModel.loadRestaurantsByCity(searchQuery)
+            },
+            onClearClick = { viewModel.clearCitySearch() }
         )
 
+        // הצעות לעיר
         if (citySuggestions.isNotEmpty()) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
@@ -83,7 +84,7 @@ fun LocationScreen(
                             TextButton(
                                 onClick = {
                                     viewModel.pauseSuggestionsFetching()
-                                    viewModel.updateSearchQuery(suggestion)
+                                    viewModel.updateLocationSearchQuery(suggestion)
                                     viewModel.clearCitySuggestions()
                                     viewModel.loadRestaurantsByCity(suggestion)
 
@@ -109,6 +110,7 @@ fun LocationScreen(
             }
         }
 
+        // טוען...
         if (isLoading) {
             Box(
                 modifier = Modifier
@@ -118,35 +120,35 @@ fun LocationScreen(
             ) {
                 CircularProgressIndicator(color = Color(0xFF4A4A4A))
             }
-        } else {
-            if (!isLocationSearchActive) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Please enter a city or address to search", color = Color.Gray)
-                }
-            } else if (locationSearchResults.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No restaurants found.",
-                        color = Color.Gray,
-                        fontSize = 16.sp
+        }
+        // לא בוצע חיפוש
+        else if (!isLocationSearchActive) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Please enter a city or address to search", color = Color.Gray)
+            }
+        }
+        // אין תוצאות
+        else if (locationSearchResults.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No restaurants found.", color = Color.Gray, fontSize = 16.sp)
+            }
+        }
+        // תוצאות
+        else {
+            LazyColumn {
+                items(locationSearchResults) { restaurant ->
+                    RestaurantCard(
+                        restaurant = restaurant,
+                        isFavorite = favorites.contains(restaurant),
+                        onFavoriteClick = { viewModel.toggleFavorite(it) },
+                        onTap = { onRestaurantClick(restaurant.id) }
                     )
-                }
-            } else {
-                LazyColumn {
-                    items(locationSearchResults) { restaurant ->
-                        RestaurantCard(
-                            restaurant = restaurant,
-                            isFavorite = favorites.contains(restaurant),
-                            onFavoriteClick = { viewModel.toggleFavorite(it) },
-                            onTap = { onRestaurantClick(it.id) }
-                        )
-                    }
                 }
             }
         }

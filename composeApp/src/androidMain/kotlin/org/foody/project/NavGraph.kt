@@ -104,9 +104,12 @@ fun AppNavHost(
 
         composable("details/{restaurantId}") { backStackEntry ->
             val restaurantId = backStackEntry.arguments?.getString("restaurantId")
-            val restaurant =
-                viewModel.apiResult.find { it.id == restaurantId }
-                    ?: viewModel.locationSearchResults.find { it.id == restaurantId }
+
+            val restaurant = restaurantId?.let { id ->
+                viewModel.mainApiResult.find { it.id == id }
+                    ?: viewModel.locationSearchResults.find { it.id == id }
+                    ?: viewModel.mainSearchResults.find { it.id == id }
+            }
 
             if (restaurant != null) {
                 RestaurantDetailScreen(

@@ -11,30 +11,67 @@ import places.RestaurantApi
 
 class RestaurantsViewModel : ViewModel() {
 
-    var apiResult by mutableStateOf<List<Restaurant>>(emptyList())
+    // MAIN TAB
+    var mainApiResult by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
-    var originalRestaurants by mutableStateOf<List<Restaurant>>(emptyList())
+    var mainOriginalRestaurants by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
-    var searchQuery by mutableStateOf("")
+    var mainSearchResults by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
-    var searchResults by mutableStateOf<List<Restaurant>>(emptyList())
+    var mainSearchQuery by mutableStateOf("")
         private set
 
-    var isLoading by mutableStateOf(false)
-        private set
+    fun loadInitialRestaurants(location: String) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val result = RestaurantApi.searchRestaurants(location)
+                mainApiResult = result
+                mainOriginalRestaurants = result
+                mainSearchResults = emptyList()
+            } catch (e: Exception) {
+                mainApiResult = emptyList()
+                mainOriginalRestaurants = emptyList()
+                mainSearchResults = emptyList()
+            }
+            isLoading = false
+        }
+    }
 
-    var favorites by mutableStateOf<List<Restaurant>>(emptyList())
-        private set
+    fun updateMainSearchQuery(query: String) {
+        mainSearchQuery = query
+    }
 
-    private val api = RestaurantApiService()
+    fun searchRestaurants() {
+        if (mainSearchQuery.isNotBlank()) {
+            isLoading = true
+            viewModelScope.launch {
+                api.getRestaurantsByName(mainSearchQuery) { results ->
+                    mainSearchResults = results
+                    isLoading = false
+                }
+            }
+        } else {
+            clearMainSearch()
+        }
+    }
 
+    fun clearMainSearch() {
+        mainSearchQuery = ""
+        mainSearchResults = emptyList()
+    }
+
+    // LOCATION TAB
     var locationSearchResults by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
     var isLocationSearchActive by mutableStateOf(false)
+        private set
+
+    var locationSearchQuery by mutableStateOf("")
         private set
 
     var citySuggestions by mutableStateOf<List<String>>(emptyList())
@@ -49,66 +86,8 @@ class RestaurantsViewModel : ViewModel() {
     var hasSearchedCity by mutableStateOf(false)
         private set
 
-
-    // טוען מסעדות לפי מיקום (קבל מיקום כ-string "latitude,longitude")
-    fun loadInitialRestaurants(location: String) {
-        viewModelScope.launch {
-            isLoading = true
-            try {
-                val result = RestaurantApi.searchRestaurants(location)
-                apiResult = result
-                originalRestaurants = result
-                searchResults = emptyList()
-            } catch (e: Exception) {
-                // טיפול בשגיאות אם צריך
-                apiResult = emptyList()
-                originalRestaurants = emptyList()
-                searchResults = emptyList()
-            }
-            isLoading = false
-        }
-    }
-
-    fun updateSearchQuery(query: String) {
-        searchQuery = query
-    }
-
-    fun searchRestaurants() {
-        if (searchQuery.isNotBlank()) {
-            isLoading = true
-            viewModelScope.launch {
-                api.getRestaurantsByName(searchQuery) { results ->
-                    searchResults = results
-                    apiResult = results // לעדכן גם כאן כדי לשמור עקביות
-                    isLoading = false
-                }
-            }
-        } else {
-            clearSearch(originalRestaurants)
-        }
-    }
-
-    fun clearSearch(originalList: List<Restaurant>) {
-        searchQuery = ""
-        searchResults = emptyList()
-        apiResult = originalList
-    }
-
-    fun toggleFavorite(restaurant: Restaurant) {
-        favorites = if (favorites.contains(restaurant)) {
-            favorites - restaurant
-        } else {
-            favorites + restaurant
-        }
-    }
-
-    // אפשר להוסיף פונקציה שתטען מסעדות לפי מיקום בצורה async
-    fun loadRestaurantsByLocation(location: String) {
-        loadInitialRestaurants(location)
-    }
-
-    fun updateSearchResults(updatedList: List<Restaurant>) {
-        apiResult = updatedList
+    fun updateLocationSearchQuery(query: String) {
+        locationSearchQuery = query
     }
 
     fun loadRestaurantsByCity(city: String) {
@@ -123,7 +102,6 @@ class RestaurantsViewModel : ViewModel() {
                         it.address.lowercase().contains(trimmedCity)
                     }
                     locationSearchResults = filtered
-                    apiResult = filtered
                     hasSearchedCity = true
                     isLoading = false
                 }
@@ -135,6 +113,14 @@ class RestaurantsViewModel : ViewModel() {
         }
     }
 
+    fun clearCitySearch() {
+        isLocationSearchActive = false
+        locationSearchResults = emptyList()
+        lastCitySearched = null
+        hasSearchedCity = false
+        locationSearchQuery = ""
+        clearCitySuggestions()
+    }
 
     fun fetchCitySuggestions(query: String) {
         if (!shouldFetchSuggestions) return
@@ -148,6 +134,7 @@ class RestaurantsViewModel : ViewModel() {
     fun pauseSuggestionsFetching() {
         shouldFetchSuggestions = false
     }
+
     fun resumeSuggestionsFetching() {
         shouldFetchSuggestions = true
     }
@@ -156,13 +143,20 @@ class RestaurantsViewModel : ViewModel() {
         citySuggestions = emptyList()
     }
 
-    fun clearCitySearch() {
-        isLocationSearchActive = false
-        locationSearchResults = emptyList()
-        lastCitySearched = null
-        hasSearchedCity = false
-        searchQuery = ""
-        clearCitySuggestions()
-    }
+    // COMMON
+    var isLoading by mutableStateOf(false)
+        private set
 
+    var favorites by mutableStateOf<List<Restaurant>>(emptyList())
+        private set
+
+    private val api = RestaurantApiService()
+
+    fun toggleFavorite(restaurant: Restaurant) {
+        favorites = if (favorites.contains(restaurant)) {
+            favorites - restaurant
+        } else {
+            favorites + restaurant
+        }
+    }
 }
