@@ -42,6 +42,15 @@ struct MainTabView: View {
                 Image(systemName: "mappin.and.ellipse")
                 Text("Location")
             }
+            
+            TopTenView(
+                favorites: $favorites,
+                filter: RestaurantFilter(),
+                isLoggedIn: $isLoggedIn
+            )
+            .tabItem {
+                Label("Top 10", systemImage: "trophy.fill")
+            }
         }
         .onAppear {
             if !didLoad {
