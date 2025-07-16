@@ -152,6 +152,21 @@ class RestaurantsViewModel : ViewModel() {
 
     private val api = RestaurantApiService()
 
+    // Sorting & Filtering
+    var sortAlphabetically by mutableStateOf(false)
+        private set
+
+    var showOpenOnly by mutableStateOf(false)
+        private set
+
+    fun toggleSortAlphabetically() {
+        sortAlphabetically = !sortAlphabetically
+    }
+
+    fun toggleShowOpenOnly() {
+        showOpenOnly = !showOpenOnly
+    }
+
     fun toggleFavorite(restaurant: Restaurant) {
         favorites = if (favorites.contains(restaurant)) {
             favorites - restaurant

@@ -127,7 +127,7 @@ fun LocationScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Please enter a city or address to search", color = Color.Gray)
+                Text("Please enter a city to search", color = Color.Gray)
             }
         }
         // אין תוצאות

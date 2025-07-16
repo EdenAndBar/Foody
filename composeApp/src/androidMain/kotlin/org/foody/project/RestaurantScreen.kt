@@ -19,7 +19,7 @@ import places.Restaurant
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.filled.*
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.graphics.SolidColor
 
 @Composable
 fun SearchBar(
@@ -111,6 +111,8 @@ fun RestaurantScreen(
     val favorites = viewModel.favorites
     val originalRestaurants = viewModel.mainOriginalRestaurants
 
+    var sortOption by remember { mutableStateOf("none") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -121,6 +123,11 @@ fun RestaurantScreen(
             onSearchChanged = { viewModel.updateMainSearchQuery(it) },
             onSearchSubmit = { viewModel.searchRestaurants() },
             onClearClick = { viewModel.clearMainSearch() }
+        )
+
+        SortButtonCompact(
+            selectedOption = sortOption,
+            onOptionSelected = { sortOption = it }
         )
 
         if (searchResults.isNotEmpty()) {
@@ -155,7 +162,16 @@ fun RestaurantScreen(
                 CircularProgressIndicator(color = Color(0xFF4A4A4A))
             }
         } else {
-            val filteredRestaurants = if (searchResults.isNotEmpty()) searchResults else restaurants
+            var filteredRestaurants = if (searchResults.isNotEmpty()) searchResults else restaurants
+
+            when (sortOption) {
+                "open" -> {
+                    filteredRestaurants = filteredRestaurants.filter { it.isOpenNow == true }
+                }
+                "name" -> {
+                    filteredRestaurants = filteredRestaurants.sortedBy { it.name }
+                }
+            }
 
             LazyColumn {
                 items(filteredRestaurants) { restaurant ->
@@ -167,6 +183,79 @@ fun RestaurantScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SortButtonCompact(
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 15.dp, vertical = 6.dp)
+            .wrapContentSize(Alignment.TopStart)
+    ) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.height(36.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            ),
+            border = ButtonDefaults.outlinedButtonBorder.copy(
+                brush = SolidColor(Color(0xFFBDBDBD)) // אפור בהיר
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.Sort,
+                contentDescription = "Sort",
+                tint = Color.DarkGray,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = when (selectedOption) {
+                    "name" -> "Sort by name"
+                    "open" -> "Open now only"
+                    else -> "Sort"
+                },
+                fontSize = 14.sp,
+                color = Color.Black
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(Color.White)
+        ) {
+            DropdownMenuItem(
+                text = { Text("Sort by name", color = Color.Black) },
+                onClick = {
+                    onOptionSelected("name")
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Open now only", color = Color.Black) },
+                onClick = {
+                    onOptionSelected("open")
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Clear sort", color = Color.Black) },
+                onClick = {
+                    onOptionSelected("none")
+                    expanded = false
+                }
+            )
         }
     }
 }
