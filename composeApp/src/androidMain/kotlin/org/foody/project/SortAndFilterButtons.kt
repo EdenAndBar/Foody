@@ -6,27 +6,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import places.Restaurant
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.SwapVert
+
 
 @Composable
 fun SortButton(
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
+    selectedSortOption: String,
+    onSortSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
-            .padding(horizontal = 15.dp, vertical = 6.dp)
             .wrapContentSize(Alignment.TopStart)
     ) {
         OutlinedButton(
@@ -37,22 +37,20 @@ fun SortButton(
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.White,
                 contentColor = Color.Black
-            ),
-            border = ButtonDefaults.outlinedButtonBorder.copy(
-                brush = SolidColor(Color(0xFFBDBDBD)) // אפור בהיר
             )
         ) {
             Icon(
-                imageVector = Icons.Default.Sort,
+                imageVector = Icons.Default.SwapVert,
                 contentDescription = "Sort",
                 tint = Color.DarkGray,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = when (selectedOption) {
-                    "name" -> "Sort by name"
-                    "open" -> "Open now only"
+                text = when (selectedSortOption) {
+                    "name" -> "Name (A-Z)"
+                    "ratingAsc" -> "Rating ↑"
+                    "ratingDesc" -> "Rating ↓"
                     else -> "Sort"
                 },
                 fontSize = 14.sp,
@@ -66,36 +64,96 @@ fun SortButton(
             modifier = Modifier.background(Color.White)
         ) {
             DropdownMenuItem(
-                text = { Text("By name", color = Color.Black) },
+                text = { Text("Name (A-Z)") },
                 onClick = {
-                    onOptionSelected("name")
+                    onSortSelected("name")
                     expanded = false
                 }
             )
             DropdownMenuItem(
-                text = { Text("Open now only", color = Color.Black) },
+                text = { Text("Rating ↑") },
                 onClick = {
-                    onOptionSelected("open")
+                    onSortSelected("ratingAsc")
                     expanded = false
                 }
             )
             DropdownMenuItem(
-                text = { Text("By rating") },
+                text = { Text("Rating ↓") },
                 onClick = {
-                    onOptionSelected("rating")
+                    onSortSelected("ratingDesc")
                     expanded = false
                 }
             )
             DropdownMenuItem(
-                text = { Text("Clear sort", color = Color.Black) },
+                text = { Text("Clear sort") },
                 onClick = {
-                    onOptionSelected("none")
+                    onSortSelected("none")
                     expanded = false
                 }
             )
         }
     }
 }
+
+@Composable
+fun FilterButton(
+    isOpenNow: Boolean,
+    onOpenNowToggle: () -> Unit,
+    ratingRange: ClosedFloatingPointRange<Float>,
+    onRatingRangeChange: (ClosedFloatingPointRange<Float>) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .wrapContentSize(Alignment.TopStart)
+    ) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.height(36.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.FilterList,  // אייקון פילטר
+                contentDescription = "Filter",
+                tint = Color.DarkGray,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Filter", fontSize = 14.sp)
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(Color.White)
+                .padding(10.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Checkbox(
+                    checked = isOpenNow,
+                    onCheckedChange = { onOpenNowToggle() }
+                )
+                Text("Open now", fontSize = 14.sp)
+            }
+
+            RatingRange(
+                ratingRange = ratingRange,
+                onRatingRangeChange = onRatingRangeChange
+            )
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,21 +207,24 @@ fun RatingRange(
 fun filterAndSortRestaurants(
     restaurants: List<Restaurant>,
     sortOption: String,
+    isOpenNow: Boolean,
     ratingRange: ClosedFloatingPointRange<Float>
 ): List<Restaurant> {
     var filtered = restaurants
 
-    when (sortOption) {
-        "open" -> {
-            filtered = filtered.filter { it.isOpenNow == true }
-        }
-        "name" -> {
-            filtered = filtered.sortedBy { it.name }
-        }
+    if (isOpenNow) {
+        filtered = filtered.filter { it.isOpenNow == true }
     }
 
-    if (sortOption == "rating") {
-        filtered = filtered.filter { it.rating >= ratingRange.start && it.rating <= ratingRange.endInclusive }
+    filtered = filtered.filter {
+        it.rating >= ratingRange.start && it.rating <= ratingRange.endInclusive
+    }
+
+    filtered = when (sortOption) {
+        "name" -> filtered.sortedBy { it.name }
+        "ratingAsc" -> filtered.sortedBy { it.rating }
+        "ratingDesc" -> filtered.sortedByDescending { it.rating }
+        else -> filtered
     }
 
     return filtered

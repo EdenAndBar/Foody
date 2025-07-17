@@ -30,6 +30,8 @@ fun RestaurantScreen(
 
     var sortOption by remember { mutableStateOf("none") }
     var ratingRange by remember { mutableStateOf(0f..5f) }
+    var isOpenNow by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -42,18 +44,21 @@ fun RestaurantScreen(
             onClearClick = { viewModel.clearMainSearch() }
         )
 
-        SortButton(
-            selectedOption = sortOption,
-            onOptionSelected = { sortOption = it }
-        )
-
-        if (sortOption == "rating") {
-            RatingRange(
+        Row(
+            modifier = Modifier.padding(horizontal = 15.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            SortButton(
+                selectedSortOption = sortOption,
+                onSortSelected = { sortOption = it }
+            )
+            FilterButton(
+                isOpenNow = isOpenNow,
+                onOpenNowToggle = { isOpenNow = !isOpenNow },
                 ratingRange = ratingRange,
                 onRatingRangeChange = { ratingRange = it }
             )
         }
-
 
         if (searchResults.isNotEmpty()) {
             Row(
@@ -88,7 +93,7 @@ fun RestaurantScreen(
             }
         } else {
             val baseList = if (searchResults.isNotEmpty()) searchResults else restaurants
-            val filteredRestaurants = filterAndSortRestaurants(baseList, sortOption, ratingRange)
+            val filteredRestaurants = filterAndSortRestaurants(baseList, sortOption, isOpenNow, ratingRange)
 
             LazyColumn {
                 items(filteredRestaurants) { restaurant ->
