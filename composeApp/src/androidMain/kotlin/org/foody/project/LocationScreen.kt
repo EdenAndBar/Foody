@@ -29,6 +29,10 @@ fun LocationScreen(
     val citySuggestions = viewModel.citySuggestions
     val coroutineScope = rememberCoroutineScope()
 
+    var sortOption by remember { mutableStateOf("none") }
+    var ratingRange by remember { mutableStateOf(0f..5f) }
+    var isOpenNow by remember { mutableStateOf(false) }
+
     // הצעות לעיר
     LaunchedEffect(searchQuery) {
         val trimmed = searchQuery.trim()
@@ -62,6 +66,22 @@ fun LocationScreen(
             },
             onClearClick = { viewModel.clearCitySearch() }
         )
+
+        Row(
+            modifier = Modifier.padding(horizontal = 15.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            SortButton(
+                selectedSortOption = sortOption,
+                onSortSelected = { sortOption = it }
+            )
+            FilterButton(
+                isOpenNow = isOpenNow,
+                onOpenNowToggle = { isOpenNow = !isOpenNow },
+                ratingRange = ratingRange,
+                onRatingRangeChange = { ratingRange = it }
+            )
+        }
 
         // הצעות לעיר
         if (citySuggestions.isNotEmpty()) {
@@ -135,8 +155,15 @@ fun LocationScreen(
         }
         // תוצאות
         else {
+            val filteredRestaurants = filterAndSortRestaurants(
+                locationSearchResults,
+                sortOption,
+                isOpenNow,
+                ratingRange
+            )
+
             LazyColumn {
-                items(locationSearchResults) { restaurant ->
+                items(filteredRestaurants) { restaurant ->
                     RestaurantCard(
                         restaurant = restaurant,
                         isFavorite = favorites.contains(restaurant),
