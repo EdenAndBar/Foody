@@ -100,7 +100,8 @@ fun FilterButton(
     isOpenNow: Boolean,
     onOpenNowToggle: () -> Unit,
     ratingRange: ClosedFloatingPointRange<Float>,
-    onRatingRangeChange: (ClosedFloatingPointRange<Float>) -> Unit
+    onRatingRangeChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onClearFilters: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -133,7 +134,7 @@ fun FilterButton(
             onDismissRequest = { expanded = false },
             modifier = Modifier
                 .background(Color.White)
-                .padding(10.dp)
+                .padding(8.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -141,8 +142,14 @@ fun FilterButton(
             ) {
                 Checkbox(
                     checked = isOpenNow,
-                    onCheckedChange = { onOpenNowToggle() }
+                    onCheckedChange = { onOpenNowToggle() },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Color.Gray,
+                        uncheckedColor = Color.Gray,
+                        checkmarkColor = Color.White
+                    )
                 )
+
                 Text("Open now", fontSize = 14.sp)
             }
 
@@ -150,6 +157,19 @@ fun FilterButton(
                 ratingRange = ratingRange,
                 onRatingRangeChange = onRatingRangeChange
             )
+
+            Divider(modifier = Modifier.padding(vertical = 5.dp))
+
+            TextButton(
+                onClick = {
+                    onClearFilters()
+                    expanded = false
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Clear filters", color = Color.Black, fontSize = 14.sp)
+            }
+
         }
     }
 }

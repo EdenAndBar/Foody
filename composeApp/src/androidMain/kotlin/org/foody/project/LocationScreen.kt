@@ -79,7 +79,11 @@ fun LocationScreen(
                 isOpenNow = isOpenNow,
                 onOpenNowToggle = { isOpenNow = !isOpenNow },
                 ratingRange = ratingRange,
-                onRatingRangeChange = { ratingRange = it }
+                onRatingRangeChange = { ratingRange = it },
+                onClearFilters = {
+                    isOpenNow = false
+                    ratingRange = 0f..5f
+                }
             )
         }
 
