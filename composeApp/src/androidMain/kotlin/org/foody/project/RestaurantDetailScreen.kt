@@ -125,6 +125,15 @@ fun RestaurantDetailScreen(
 
             InfoRow(icon = Icons.Default.LocationOn, label = restaurant.address)
 
+            val phone = restaurant.phoneNumber ?: details?.formattedPhoneNumber
+            phone?.let {
+                InfoRow(
+                    icon = Icons.Default.Phone,
+                    label = it,
+                    onClick = { uriHandler.openUri("tel:$it") }
+                )
+            }
+
             details?.let { detail ->
                 val websiteUrl = detail.website ?: detail.url
                 websiteUrl?.let { url ->
