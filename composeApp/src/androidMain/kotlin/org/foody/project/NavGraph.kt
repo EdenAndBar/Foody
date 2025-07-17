@@ -126,6 +126,13 @@ fun AppNavHost(
         composable("profile") {
             ProfileScreen(onBackClick = { navController.popBackStack() })
         }
+
+        composable("about") {
+            AboutUsScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
     }
 }
 

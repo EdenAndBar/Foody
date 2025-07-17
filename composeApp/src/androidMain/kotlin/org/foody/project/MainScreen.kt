@@ -107,8 +107,10 @@ fun MainScreen(
                     }
 
                     DrawerItem(icon = Icons.Default.Info, label = "About Foody") {
-                        coroutineScope.launch { drawerState.close() }
-                        // TODO: Settings screen
+                        coroutineScope.launch {
+                            drawerState.close()
+                            navController.navigate("about")
+                        }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))

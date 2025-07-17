@@ -6,8 +6,8 @@
 
 
     <application
-        android:icon="@mipmap/foody"
-        android:roundIcon="@mipmap/foody"
+        android:icon="@mipmap/foody_logo"
+        android:roundIcon="@mipmap/foody_logo"
         android:label="Foody"
         android:allowBackup="true"
         android:supportsRtl="true"

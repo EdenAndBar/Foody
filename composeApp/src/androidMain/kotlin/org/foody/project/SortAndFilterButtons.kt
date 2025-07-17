@@ -174,7 +174,6 @@ fun FilterButton(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RatingRange(
