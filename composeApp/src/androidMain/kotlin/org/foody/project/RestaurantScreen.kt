@@ -20,6 +20,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.border
 
 @Composable
 fun SearchBar(
@@ -98,6 +102,7 @@ fun SearchBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantScreen(
     navController: NavHostController,
@@ -112,7 +117,7 @@ fun RestaurantScreen(
     val originalRestaurants = viewModel.mainOriginalRestaurants
 
     var sortOption by remember { mutableStateOf("none") }
-
+    var ratingRange by remember { mutableStateOf(0f..5f) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -129,6 +134,52 @@ fun RestaurantScreen(
             selectedOption = sortOption,
             onOptionSelected = { sortOption = it }
         )
+
+        if (sortOption == "rating") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Rating range: ${"%.1f".format(ratingRange.start)} - ${"%.1f".format(ratingRange.endInclusive)}",
+                    fontSize = 14.sp,
+                    color = Color.DarkGray
+                )
+
+                RangeSlider(
+                    modifier = Modifier.height(30.dp),
+                    value = ratingRange,
+                    onValueChange = { ratingRange = it },
+                    valueRange = 0f..5f,
+                    steps = 9,
+                    colors = SliderDefaults.colors(
+                        activeTrackColor = Color.Gray,
+                        inactiveTrackColor = Color.LightGray,
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent
+                    ),
+                    startThumb = {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .border(2.dp, Color.LightGray, CircleShape)
+                                .background(Color.LightGray, CircleShape)
+                        )
+                    },
+                    endThumb = {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .border(2.dp, Color.LightGray, CircleShape)
+                                .background(Color.LightGray, CircleShape)
+                        )
+                    }
+                )
+
+
+            }
+        }
 
         if (searchResults.isNotEmpty()) {
             Row(
@@ -170,6 +221,12 @@ fun RestaurantScreen(
                 }
                 "name" -> {
                     filteredRestaurants = filteredRestaurants.sortedBy { it.name }
+                }
+            }
+
+            if (sortOption == "rating") {
+                filteredRestaurants = filteredRestaurants.filter {
+                    it.rating >= ratingRange.start && it.rating <= ratingRange.endInclusive
                 }
             }
 
@@ -236,7 +293,7 @@ fun SortButtonCompact(
             modifier = Modifier.background(Color.White)
         ) {
             DropdownMenuItem(
-                text = { Text("Sort by name", color = Color.Black) },
+                text = { Text("By name", color = Color.Black) },
                 onClick = {
                     onOptionSelected("name")
                     expanded = false
@@ -246,6 +303,13 @@ fun SortButtonCompact(
                 text = { Text("Open now only", color = Color.Black) },
                 onClick = {
                     onOptionSelected("open")
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("By rating") },
+                onClick = {
+                    onOptionSelected("rating")
                     expanded = false
                 }
             )
