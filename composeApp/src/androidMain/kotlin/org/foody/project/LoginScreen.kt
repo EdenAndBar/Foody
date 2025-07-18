@@ -19,7 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseUser
 import androidx.compose.ui.text.font.FontWeight
-
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.Icons
 
 @Composable
 fun LoginScreen(
@@ -104,11 +107,13 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Password
+            var showPassword by remember { mutableStateOf(false) }
+
             TextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password", color = textSecondary) },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
@@ -120,8 +125,25 @@ fun LoginScreen(
                     focusedContainerColor = inputBackground,
                     unfocusedContainerColor = inputBackground
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    val visibilityIcon = if (showPassword) {
+                        Icons.Filled.VisibilityOff
+                    } else {
+                        Icons.Filled.Visibility
+                    }
+
+                    IconButton(onClick = { showPassword = !showPassword }) {
+                        Icon(
+                            imageVector = visibilityIcon,
+                            contentDescription = if (showPassword) "Hide password" else "Show password",
+                            tint = textSecondary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
             )
+
             Spacer(modifier = Modifier.height(5.dp))
 
 

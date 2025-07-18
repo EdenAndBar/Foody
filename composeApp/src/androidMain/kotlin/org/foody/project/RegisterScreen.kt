@@ -13,7 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun RegisterScreen(
@@ -113,10 +115,16 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Email
+            var emailError by remember { mutableStateOf<String?>(null) }
+
             TextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = if (isValidEmail(it)) null else "Please enter a valid email"
+                },
                 label = { Text("Email", color = textSecondary) },
+                isError = emailError != null,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
@@ -126,15 +134,27 @@ fun RegisterScreen(
                     unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = textPrimary,
                     focusedContainerColor = inputBackground,
-                    unfocusedContainerColor = inputBackground
+                    unfocusedContainerColor = inputBackground,
+                    errorContainerColor = inputBackground
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
+
+            emailError?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Password
             var passwordError by remember { mutableStateOf<String?>(null) }
+            var showPassword by remember { mutableStateOf(false) }
 
             TextField(
                 value = password,
@@ -143,8 +163,9 @@ fun RegisterScreen(
                     passwordError = if (isValidPassword(it)) null else "Password must be at least 6 characters, with letters and numbers"
                 },
                 label = { Text("Password", color = textSecondary) },
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
+                isError = passwordError != null,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = textPrimary,
@@ -155,9 +176,25 @@ fun RegisterScreen(
                     focusedContainerColor = inputBackground,
                     unfocusedContainerColor = inputBackground
                 ),
-                shape = RoundedCornerShape(12.dp)
-            )
+                shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    val visibilityIcon = if (showPassword) {
+                        Icons.Filled.VisibilityOff
+                    } else {
+                        Icons.Filled.Visibility
+                    }
 
+                    IconButton(onClick = { showPassword = !showPassword }) {
+                        Icon(
+                            imageVector = visibilityIcon,
+                            contentDescription = if (showPassword) "Hide password" else "Show password",
+                            tint = textSecondary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+
+                }
+            )
             passwordError?.let {
                 Text(
                     text = it,
@@ -220,4 +257,8 @@ fun isValidPassword(password: String): Boolean {
     if (!password.any { it.isDigit() }) return false
     if (!password.any { it.isLetter() }) return false
     return true
+}
+
+fun isValidEmail(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
