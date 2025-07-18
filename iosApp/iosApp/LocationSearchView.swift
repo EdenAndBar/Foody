@@ -52,7 +52,7 @@ struct LocationSearchView: View {
 
                     if filteredRestaurants.isEmpty {
                         Spacer()
-                        Text("No restaurants found")
+                        Text("Enter a city to search")
                             .foregroundColor(.gray)
                         Spacer()
                     } else {

@@ -16,10 +16,12 @@ struct RestaurantCard: View {
                         .resizable()
                         .scaledToFill()
                         .transition(.opacity)
+                        .frame(width: UIScreen.main.bounds.width - 32, height: 200)
                         .animation(.easeInOut(duration: 0.3), value: photoUrl)
                 } placeholder: {
                     Rectangle()
                         .fill(Color(.systemGray5))
+                        .frame(width: UIScreen.main.bounds.width - 32, height: 200)
                         .overlay(ProgressView())
                 }
                 .frame(height: 180)
@@ -42,7 +44,7 @@ struct RestaurantCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(name)
-                        .font(.title3)
+                        .font(.headline)
                         .fontWeight(.semibold)
 
                     Text("📍 \(address)")
