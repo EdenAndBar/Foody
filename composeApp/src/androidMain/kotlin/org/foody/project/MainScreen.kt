@@ -43,12 +43,19 @@ fun MainScreen(
     val bottomNavController = rememberNavController()  // NavController פנימי ל־BottomBar
 
     val user = FirebaseAuth.getInstance().currentUser
-    val displayName = user?.displayName ?: ""
+    var displayName = user?.displayName ?: ""
+
+    LaunchedEffect(Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.reload()?.addOnCompleteListener {
+            displayName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
+        }
+    }
+
     val firstName = displayName.split(" ").firstOrNull() ?: ""
 
     var currentLocation by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // קריאה לקבלת מיקום והטענת מסעדות
     LaunchedEffect(currentLocation) {
         if (currentLocation != null && viewModel.mainApiResult.isEmpty()) {
             viewModel.loadInitialRestaurants(currentLocation!!)

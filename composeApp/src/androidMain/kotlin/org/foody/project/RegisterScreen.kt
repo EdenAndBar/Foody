@@ -172,7 +172,10 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     isLoading = true
-                    FirebaseAuthManager.register(email, password,
+                    FirebaseAuthManager.register(
+                        email = email,
+                        password = password,
+                        fullName = "$firstName $lastName", // 👈 נוסיף את זה
                         onSuccess = { user ->
                             isLoading = false
                             onRegisterSuccess(user.email ?: "")
