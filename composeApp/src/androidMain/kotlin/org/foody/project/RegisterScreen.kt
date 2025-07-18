@@ -11,6 +11,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+
 
 @Composable
 fun RegisterScreen(
@@ -35,14 +38,28 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(background)
-            .padding(horizontal = 24.dp),
-        contentAlignment = Alignment.Center
     ) {
+
+        // Back arrow
+        IconButton(
+            onClick = onNavigateBackToLogin,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 20.dp, start = 2.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black
+            )
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .wrapContentHeight()
+                .align(Alignment.Center)
+                .padding(horizontal = 24.dp)
                 .fillMaxWidth()
         ) {
             Text(
@@ -117,9 +134,14 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Password
+            var passwordError by remember { mutableStateOf<String?>(null) }
+
             TextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    passwordError = if (isValidPassword(it)) null else "Password must be at least 6 characters, with letters and numbers"
+                },
                 label = { Text("Password", color = textSecondary) },
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
@@ -135,6 +157,15 @@ fun RegisterScreen(
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
+
+            passwordError?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -154,9 +185,9 @@ fun RegisterScreen(
                 },
                 enabled = !isLoading &&
                         email.isNotBlank() &&
-                        password.isNotBlank() &&
                         firstName.isNotBlank() &&
-                        lastName.isNotBlank(),
+                        lastName.isNotBlank() &&
+                        isValidPassword(password),
                 modifier = Modifier
                     .widthIn(min = 180.dp)
                     .height(48.dp),
@@ -177,24 +208,13 @@ fun RegisterScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextButton(onClick = onNavigateBackToLogin) {
-                Text(
-                    text = "Already have an account? Login here",
-                    fontSize = 14.sp,
-                    color = textSecondary
-                )
-            }
-
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 14.sp
-                )
-            }
         }
     }
+}
+
+fun isValidPassword(password: String): Boolean {
+    if (password.length < 6) return false
+    if (!password.any { it.isDigit() }) return false
+    if (!password.any { it.isLetter() }) return false
+    return true
 }
