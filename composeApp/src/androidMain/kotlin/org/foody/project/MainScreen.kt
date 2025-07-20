@@ -24,23 +24,23 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.saveable.rememberSaveable
 
-sealed class BottomNavItem(val label: String, val icon: ImageVector) {
-    object Main : BottomNavItem("main", Icons.Default.Home)
-    object Favorites : BottomNavItem("favorites", Icons.Default.Favorite)
-    object Location : BottomNavItem("location", Icons.Default.LocationOn)
-    object Category : BottomNavItem("category", Icons.Default.Menu)
+sealed class BottomNavItem(val route: String, val label: String, val icon: ImageVector) {
+    object Main : BottomNavItem("main", "Main", Icons.Default.Home)
+    object Favorites : BottomNavItem("favorites", "Favorites", Icons.Default.Favorite)
+    object Location : BottomNavItem("location", "Location", Icons.Default.LocationOn)
+    object Top10 : BottomNavItem("top10", "Top 10", Icons.Default.Star)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavHostController,        // ה־NavController הראשי, לניווט ל־details ו־profile
+    navController: NavHostController,
     viewModel: RestaurantsViewModel,
     onLogout: () -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
-    val bottomNavController = rememberNavController()  // NavController פנימי ל־BottomBar
+    val bottomNavController = rememberNavController()
 
     val user = FirebaseAuth.getInstance().currentUser
     var displayName = user?.displayName ?: ""
@@ -160,16 +160,16 @@ fun MainScreen(
             Box(modifier = Modifier.padding(paddingValues)) {
                 NavHost(
                     navController = bottomNavController,
-                    startDestination = BottomNavItem.Main.label.lowercase()
+                    startDestination = BottomNavItem.Main.route
                 ) {
-                    composable(BottomNavItem.Main.label.lowercase()) {
+                    composable(BottomNavItem.Main.route){
                         RestaurantScreen(
-                            navController = navController, // נווט ל-details דרך ה-root
+                            navController = navController,
                             viewModel = viewModel,
                             onRestaurantClick = { id -> navController.navigate("details/$id") }
                         )
                     }
-                    composable(BottomNavItem.Favorites.label.lowercase()) {
+                    composable(BottomNavItem.Favorites.route) {
                         // החלף ל־FavoritesScreen אמיתי אם יש לך, כרגע טקסט לדוגמה
                         Box(
                             Modifier.fillMaxSize(),
@@ -182,24 +182,21 @@ fun MainScreen(
                             )
                         }
                     }
-                    composable(BottomNavItem.Location.label.lowercase()) {
+                    composable(BottomNavItem.Location.route) {
                         LocationScreen(
                             viewModel = viewModel,
                             onRestaurantClick = { id -> navController.navigate("details/$id") }
                         )
                     }
-                    composable(BottomNavItem.Category.label.lowercase()) {
-                        Box(
-                            Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "Filter by Category",
-                                color = Color.Gray,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
+                    composable(BottomNavItem.Top10.route) {
+                        Top10Screen(
+                            restaurants = viewModel.getTop10Restaurants(),
+                            favorites = viewModel.favorites,
+                            onRestaurantClick = { id -> navController.navigate("details/$id") },
+                            onFavoriteClick = { restaurant -> viewModel.toggleFavorite(restaurant) }
+                        )
                     }
+
                 }
             }
         }
@@ -212,7 +209,7 @@ fun BottomNavigationBar(navController: NavHostController) {
         BottomNavItem.Main,
         BottomNavItem.Favorites,
         BottomNavItem.Location,
-        BottomNavItem.Category
+        BottomNavItem.Top10
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -227,20 +224,20 @@ fun BottomNavigationBar(navController: NavHostController) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        tint = if (currentRoute == item.label.lowercase()) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                        tint = if (currentRoute == item.route) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
                     )
                 },
                 label = {
                     Text(
                         text = item.label,
                         fontSize = 12.sp,
-                        color = if (currentRoute == item.label.lowercase()) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
+                        color = if (currentRoute == item.route) Color(0xFF1C1C1E) else Color(0xFF8E8E93)
                     )
                 },
-                selected = currentRoute == item.label.lowercase(),
+                selected = currentRoute == item.route,
                 onClick = {
-                    if (currentRoute != item.label.lowercase()) {
-                        navController.navigate(item.label.lowercase()) {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
                             // שמירת מצב ומניעת איפוס
                             launchSingleTop = true
                             restoreState = true

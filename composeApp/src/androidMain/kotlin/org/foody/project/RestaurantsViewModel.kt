@@ -142,6 +142,10 @@ class RestaurantsViewModel : ViewModel() {
     fun clearCitySuggestions() {
         citySuggestions = emptyList()
     }
+    // TOP 10 TAB
+    fun getTop10Restaurants(): List<Restaurant> {
+        return mainOriginalRestaurants.sortedByDescending { it.rating }.take(10)
+    }
 
     // COMMON
     var isLoading by mutableStateOf(false)
@@ -174,4 +178,6 @@ class RestaurantsViewModel : ViewModel() {
             favorites + restaurant
         }
     }
+
+
 }
