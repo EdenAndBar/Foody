@@ -19,17 +19,17 @@ import places.Restaurant
 @Composable
 fun Top10Screen(
     restaurants: List<Restaurant>,
+    isLoading: Boolean,
     favorites: List<Restaurant>,
     onRestaurantClick: (String) -> Unit,
     onFavoriteClick: (Restaurant) -> Unit
 ) {
-    val top10 = restaurants
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFFF2F2F7))
-        .padding(16.dp)
-    ){
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF2F2F7))
+            .padding(16.dp)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -42,13 +42,21 @@ fun Top10Screen(
                 style = MaterialTheme.typography.headlineSmall,
             )
         }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            itemsIndexed(top10) { index, restaurant ->
-                Top10RestaurantCard(
-                    restaurant = restaurant,
-                    index = index,
-                    onClick = { onRestaurantClick(restaurant.id) }
-                )
+
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFF4A4A4A))
+            }
+        }
+        else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                itemsIndexed(restaurants) { index, restaurant ->
+                    Top10RestaurantCard(
+                        restaurant = restaurant,
+                        index = index,
+                        onClick = { onRestaurantClick(restaurant.id) }
+                    )
+                }
             }
         }
     }
@@ -69,17 +77,11 @@ fun Top10ScreenWrapper(
         }
     }
 
-    if (isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    } else {
-        Top10Screen(
-            restaurants = restaurants,
-            favorites = viewModel.favorites,
-            onRestaurantClick = onRestaurantClick,
-            onFavoriteClick = onFavoriteClick
-        )
-    }
+    Top10Screen(
+        restaurants = restaurants,
+        isLoading = isLoading,
+        favorites = viewModel.favorites,
+        onRestaurantClick = onRestaurantClick,
+        onFavoriteClick = onFavoriteClick
+    )
 }
-
