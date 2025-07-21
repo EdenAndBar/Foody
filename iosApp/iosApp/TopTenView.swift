@@ -65,8 +65,8 @@ struct TopTenView: View {
 
     private func fetchTopRestaurants() {
         RestaurantApiService().getRestaurantsByName(name: "") { all in
-            let highRated = all.filter { $0.rating >= 4.5 }
-            let remaining = all.filter { $0.rating < 4.5 }
+            let highRated = all.filter { $0.rating >= 4.0 }
+            let remaining = all.filter { $0.rating < 4.0 }
 
             var selected = Array(highRated.shuffled().prefix(10))
 
