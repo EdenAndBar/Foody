@@ -60,11 +60,13 @@ fun Top10ScreenWrapper(
     onRestaurantClick: (String) -> Unit,
     onFavoriteClick: (Restaurant) -> Unit
 ) {
-    val restaurants = viewModel.top10Restaurants
-    val isLoading = viewModel.isLoadingTop10
+    val restaurants by remember { derivedStateOf { viewModel.top10Restaurants } }
+    val isLoading by remember { derivedStateOf { viewModel.isLoadingTop10 } }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadTop10Restaurants()
+    LaunchedEffect(key1 = restaurants.isEmpty()) {
+        if (restaurants.isEmpty()) {
+            viewModel.loadTop10Restaurants()
+        }
     }
 
     if (isLoading) {
@@ -80,3 +82,4 @@ fun Top10ScreenWrapper(
         )
     }
 }
+
