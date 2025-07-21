@@ -20,19 +20,26 @@ struct TopTenView: View {
                         ProgressView("Loading top restaurants...")
                             .padding(.top, 50)
                     } else {
-                        ScrollView {
-                            LazyVStack(spacing: 16) {
-                                ForEach(Array(restaurants.enumerated()), id: \.element.placeId) { index, restaurant in
-                                    TopTenRestaurantCard(index: index, restaurant: restaurant, onTap: {
-                                        path.append(restaurant)
-                                    })
+                        VStack(spacing: 16) {
+                            Text("🏆 Top 10")
+                                .font(.largeTitle)
+                                .bold()
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 24)
+                            ScrollView {
+                                LazyVStack(spacing: 16) {
+                                    ForEach(Array(restaurants.enumerated()), id: \.element.placeId) { index, restaurant in
+                                        TopTenRestaurantCard(index: index, restaurant: restaurant, onTap: {
+                                            path.append(restaurant)
+                                        })
+                                    }
                                 }
+                                .padding(.top)
                             }
-                            .padding(.top)
-                        }
-                        .refreshable {
-                            hasLoadedTopRestaurants = false
-                            fetchTopRestaurants()
+                            .refreshable {
+                                hasLoadedTopRestaurants = false
+                                fetchTopRestaurants()
+                            }
                         }
                     }
                 }
