@@ -71,8 +71,8 @@ class RestaurantApiService : CoroutineScope {
         launch {
             try {
                 val all = PlacesApi.searchRestaurants(query = "")
-                val highRated = all.filter { it.rating >= 4.5 }
-                val remaining = all.filter { it.rating < 4.5 }
+                val highRated = all.filter { it.rating >= 4.0 }
+                val remaining = all.filter { it.rating < 4.0 }
 
                 val selected = mutableListOf<Restaurant>()
                 selected.addAll(highRated.shuffled().take(10))
