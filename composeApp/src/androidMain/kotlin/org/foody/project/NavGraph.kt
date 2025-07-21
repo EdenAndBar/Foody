@@ -109,6 +109,7 @@ fun AppNavHost(
                 viewModel.mainApiResult.find { it.id == id }
                     ?: viewModel.locationSearchResults.find { it.id == id }
                     ?: viewModel.mainSearchResults.find { it.id == id }
+                    ?: viewModel.top10Restaurants.find { it.id == id }
             }
 
             if (restaurant != null) {

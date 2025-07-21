@@ -189,9 +189,8 @@ fun MainScreen(
                         )
                     }
                     composable(BottomNavItem.Top10.route) {
-                        Top10Screen(
-                            restaurants = viewModel.getTop10Restaurants(),
-                            favorites = viewModel.favorites,
+                        Top10ScreenWrapper(
+                            viewModel = viewModel,
                             onRestaurantClick = { id -> navController.navigate("details/$id") },
                             onFavoriteClick = { restaurant -> viewModel.toggleFavorite(restaurant) }
                         )

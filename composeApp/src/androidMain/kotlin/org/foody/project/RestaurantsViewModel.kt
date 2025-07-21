@@ -143,8 +143,18 @@ class RestaurantsViewModel : ViewModel() {
         citySuggestions = emptyList()
     }
     // TOP 10 TAB
-    fun getTop10Restaurants(): List<Restaurant> {
-        return mainOriginalRestaurants.sortedByDescending { it.rating }.take(10)
+    var top10Restaurants by mutableStateOf<List<Restaurant>>(emptyList())
+        private set
+
+    var isLoadingTop10 by mutableStateOf(false)
+        private set
+
+    fun loadTop10Restaurants() {
+        isLoadingTop10 = true
+        api.getTop10Restaurants { results ->
+            top10Restaurants = results
+            isLoadingTop10 = false
+        }
     }
 
     // COMMON

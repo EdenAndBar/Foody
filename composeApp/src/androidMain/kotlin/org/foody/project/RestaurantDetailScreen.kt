@@ -363,42 +363,6 @@ fun InfoRow(
 }
 
 @Composable
-fun StarRating(rating: Double, maxStars: Int = 5) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        val fullStars = rating.toInt()
-        val hasHalfStar = (rating - fullStars) >= 0.25 && (rating - fullStars) < 0.75
-        val emptyStars = maxStars - fullStars - if (hasHalfStar) 1 else 0
-
-        repeat(fullStars) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = Color(0xFFFFD700),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
-        if (hasHalfStar) {
-            Icon(
-                imageVector = Icons.Default.StarHalf,
-                contentDescription = null,
-                tint = Color(0xFFFFD700),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
-        repeat(emptyStars) {
-            Icon(
-                imageVector = Icons.Default.StarBorder,
-                contentDescription = null,
-                tint = Color(0xFFFFD700),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-}
-
-@Composable
 fun AddReviewSection(
     userFullName: String,
     userComment: String,

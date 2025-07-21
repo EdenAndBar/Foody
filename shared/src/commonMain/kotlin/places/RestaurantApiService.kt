@@ -67,4 +67,27 @@ class RestaurantApiService : CoroutineScope {
         }
     }
 
+    fun getTop10Restaurants(callback: (List<Restaurant>) -> Unit) {
+        launch {
+            try {
+                val all = PlacesApi.searchRestaurants(query = "")
+                val highRated = all.filter { it.rating >= 4.5 }
+                val remaining = all.filter { it.rating < 4.5 }
+
+                val selected = mutableListOf<Restaurant>()
+                selected.addAll(highRated.shuffled().take(10))
+
+                if (selected.size < 10) {
+                    val needed = 10 - selected.size
+                    selected.addAll(remaining.shuffled().take(needed))
+                }
+
+                callback(selected.sortedByDescending { it.rating })
+            } catch (e: Exception) {
+                callback(emptyList())
+            }
+        }
+    }
+
+
 }
