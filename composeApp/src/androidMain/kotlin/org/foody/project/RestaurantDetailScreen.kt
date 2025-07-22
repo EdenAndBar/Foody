@@ -35,7 +35,8 @@ import androidx.compose.ui.unit.TextUnit
 @Composable
 fun RestaurantDetailScreen(
     restaurant: Restaurant,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: RestaurantsViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     var details by remember { mutableStateOf<PlaceDetailsResult?>(null) }
@@ -48,6 +49,8 @@ fun RestaurantDetailScreen(
     var userComment by remember { mutableStateOf("") }
     var userRating by remember { mutableStateOf(0) }
     val customReviews = remember { mutableStateListOf<GoogleReview>() }
+
+    var isFavorite by remember { mutableStateOf(viewModel.isFavorite(restaurant.id)) }
 
     LaunchedEffect(restaurant.placeId) {
         details = getRestaurantDetails(restaurant.placeId)
@@ -79,8 +82,8 @@ fun RestaurantDetailScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            isFavorite = !isFavorite
-                            // TODO: כאן תוכל להוסיף לוגיקה להוספה או הסרה מהמועדפים
+                            viewModel.toggleFavorite(restaurant)
+                            isFavorite = viewModel.isFavorite(restaurant.id)
                         }
                     ) {
                         Icon(

@@ -115,7 +115,8 @@ fun AppNavHost(
             if (restaurant != null) {
                 RestaurantDetailScreen(
                     restaurant = restaurant,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    viewModel = viewModel
                 )
             } else {
                 // אופציונלי: מסך fallback אם המסעדה לא נמצאה
