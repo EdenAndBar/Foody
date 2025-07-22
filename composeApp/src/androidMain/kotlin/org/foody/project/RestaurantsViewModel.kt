@@ -155,6 +155,18 @@ class RestaurantsViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val userId get() = auth.currentUser?.uid
 
+    private var _shouldRefreshFavorites by mutableStateOf(true)
+    val shouldRefreshFavorites: Boolean
+        get() = _shouldRefreshFavorites
+
+    fun markFavoritesDirty() {
+        _shouldRefreshFavorites = true
+    }
+
+    fun markFavoritesClean() {
+        _shouldRefreshFavorites = false
+    }
+
     fun toggleFavorite(restaurant: Restaurant) {
         userId?.let { uid ->
             val favRef = db.collection("users").document(uid)
@@ -167,18 +179,27 @@ class RestaurantsViewModel : ViewModel() {
                 favRef.set(restaurant)
                 favorites = favorites + restaurant
             }
+
+            markFavoritesDirty()
         }
     }
 
+
     fun loadFavorites() {
         userId?.let { uid ->
+            isLoading = true
             db.collection("users").document(uid).collection("favorites")
                 .get()
                 .addOnSuccessListener { result ->
                     favorites = result.mapNotNull { it.toObject(Restaurant::class.java) }
+                    isLoading = false
+                }
+                .addOnFailureListener {
+                    isLoading = false
                 }
         }
     }
+
 
     fun isFavorite(restaurantId: String): Boolean {
         return favorites.any { it.id == restaurantId }

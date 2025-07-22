@@ -1,13 +1,17 @@
 package org.foody.project
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun FavoritesScreen(
@@ -15,31 +19,72 @@ fun FavoritesScreen(
     onRestaurantClick: (String) -> Unit
 ) {
     val favorites by remember { derivedStateOf { viewModel.favorites } }
+    val isLoading by remember { derivedStateOf { viewModel.isLoading } }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadFavorites()
+    LaunchedEffect(viewModel.shouldRefreshFavorites) {
+        if (viewModel.shouldRefreshFavorites) {
+            viewModel.loadFavorites()
+            viewModel.markFavoritesClean()
+        }
     }
 
-    if (favorites.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("אין מועדפים עדיין", style = MaterialTheme.typography.titleMedium)
-        }
-    } else {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(favorites) { restaurant ->
-                RestaurantCard(
-                    restaurant = restaurant,
-                    isFavorite = true,
-                    onFavoriteClick = {
-                        viewModel.toggleFavorite(restaurant)
-                    },
-                    onTap = {
-                        onRestaurantClick(restaurant.id)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF2F2F7))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Your Favorites",
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.Gray)
+                }
+            }
+
+            favorites.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No favorites yet",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(favorites) { restaurant ->
+                        RestaurantCard(
+                            restaurant = restaurant,
+                            isFavorite = true,
+                            onFavoriteClick = {
+                                viewModel.toggleFavorite(restaurant)
+                            },
+                            onTap = {
+                                onRestaurantClick(restaurant.id)
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
