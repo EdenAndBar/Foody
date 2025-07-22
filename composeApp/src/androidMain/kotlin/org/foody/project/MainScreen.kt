@@ -170,17 +170,10 @@ fun MainScreen(
                         )
                     }
                     composable(BottomNavItem.Favorites.route) {
-                        // החלף ל־FavoritesScreen אמיתי אם יש לך, כרגע טקסט לדוגמה
-                        Box(
-                            Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "Favorites Screen",
-                                color = Color.Gray,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
+                        FavoritesScreen(
+                            viewModel = viewModel,
+                            onRestaurantClick = { id -> navController.navigate("details/$id") }
+                        )
                     }
                     composable(BottomNavItem.Location.route) {
                         LocationScreen(

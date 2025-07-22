@@ -27,6 +27,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.androidx.lifecycle.runtime.ktx)
+            implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
 
         }
 
@@ -92,5 +93,6 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(platform(libs.firebase.bom))
     implementation(libs.accompanist.permissions)
+    implementation(libs.firebase.firestore.ktx)
 }
 

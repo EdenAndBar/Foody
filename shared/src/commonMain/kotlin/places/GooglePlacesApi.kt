@@ -28,17 +28,17 @@ data class Photo(
 
 @Serializable
 data class Restaurant(
-    val id: String,
-    val placeId: String,
-    val name: String,
-    val photoUrl: String,
-    val address: String,
-    val rating: Float,
+    val id: String = "",
+    val placeId: String = "",
+    val name: String = "",
+    val photoUrl: String = "",
+    val address: String = "",
+    val rating: Float = 0f,
     val types: List<String> = emptyList(),
     val isOpenNow: Boolean? = null,
     val openingHoursText: List<String>? = null,
-    val category: String,
-    val phoneNumber: String?
+    val category: String = "",
+    val phoneNumber: String? = null
 )
 
 @Serializable

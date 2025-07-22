@@ -6,6 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import places.Restaurant
 import places.RestaurantApi
 
@@ -142,6 +145,45 @@ class RestaurantsViewModel : ViewModel() {
     fun clearCitySuggestions() {
         citySuggestions = emptyList()
     }
+
+    // FAVORITES TAB
+
+    var favorites by mutableStateOf<List<Restaurant>>(emptyList())
+        private set
+
+    private val auth = FirebaseAuth.getInstance()
+    private val db = Firebase.firestore
+    private val userId get() = auth.currentUser?.uid
+
+    fun toggleFavorite(restaurant: Restaurant) {
+        userId?.let { uid ->
+            val favRef = db.collection("users").document(uid)
+                .collection("favorites").document(restaurant.id)
+
+            if (favorites.any { it.id == restaurant.id }) {
+                favRef.delete()
+                favorites = favorites.filterNot { it.id == restaurant.id }
+            } else {
+                favRef.set(restaurant)
+                favorites = favorites + restaurant
+            }
+        }
+    }
+
+    fun loadFavorites() {
+        userId?.let { uid ->
+            db.collection("users").document(uid).collection("favorites")
+                .get()
+                .addOnSuccessListener { result ->
+                    favorites = result.mapNotNull { it.toObject(Restaurant::class.java) }
+                }
+        }
+    }
+
+    fun isFavorite(restaurantId: String): Boolean {
+        return favorites.any { it.id == restaurantId }
+    }
+
     // TOP 10 TAB
     var top10Restaurants by mutableStateOf<List<Restaurant>>(emptyList())
         private set
@@ -161,9 +203,6 @@ class RestaurantsViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
-    var favorites by mutableStateOf<List<Restaurant>>(emptyList())
-        private set
-
     private val api = RestaurantApiService()
 
     // Sorting & Filtering
@@ -179,14 +218,6 @@ class RestaurantsViewModel : ViewModel() {
 
     fun toggleShowOpenOnly() {
         showOpenOnly = !showOpenOnly
-    }
-
-    fun toggleFavorite(restaurant: Restaurant) {
-        favorites = if (favorites.contains(restaurant)) {
-            favorites - restaurant
-        } else {
-            favorites + restaurant
-        }
     }
 
 
