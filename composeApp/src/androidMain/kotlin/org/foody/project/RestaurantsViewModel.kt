@@ -9,8 +9,10 @@ import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.Query
 import places.Restaurant
 import places.RestaurantApi
+import places.*
 
 class RestaurantsViewModel : ViewModel() {
 
@@ -239,6 +241,43 @@ class RestaurantsViewModel : ViewModel() {
 
     fun toggleShowOpenOnly() {
         showOpenOnly = !showOpenOnly
+    }
+
+    // USER REVIEW
+
+    var userReviews by mutableStateOf<List<UserReview>>(emptyList())
+        private set
+
+    fun loadUserReviews(restaurantId: String) {
+        Firebase.firestore.collection("reviews")
+            .whereEqualTo("restaurantId", restaurantId)
+            .orderBy("timestamp", Query.Direction.DESCENDING) // ⬅️ חדש: לפי זמן, מהחדש לישן
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val reviews = snapshot.documents.mapNotNull { it.toObject(UserReview::class.java) }
+                println("🔄 Loaded ${reviews.size} reviews for $restaurantId")
+                reviews.forEach {
+                    println("📝 ${it.authorName} (${it.timestamp}): ${it.text}")
+                }
+                userReviews = reviews
+            }
+            .addOnFailureListener { e ->
+                println("❌ Failed to load reviews: $e")
+            }
+    }
+
+    fun addUserReview(review: UserReview, onComplete: (() -> Unit)? = null) {
+        val db = Firebase.firestore
+        db.collection("reviews")
+            .add(review)
+            .addOnSuccessListener {
+                // עדכן את הרשימה מקומית
+                userReviews = listOf(review) + userReviews
+                onComplete?.invoke()
+            }
+            .addOnFailureListener {
+                onComplete?.invoke()
+            }
     }
 
 

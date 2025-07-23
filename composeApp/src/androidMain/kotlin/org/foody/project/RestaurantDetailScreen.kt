@@ -35,7 +35,8 @@ import androidx.compose.ui.unit.TextUnit
 @Composable
 fun RestaurantDetailScreen(
     restaurant: Restaurant,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: RestaurantsViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     var details by remember { mutableStateOf<PlaceDetailsResult?>(null) }
@@ -47,16 +48,31 @@ fun RestaurantDetailScreen(
 
     var userComment by remember { mutableStateOf("") }
     var userRating by remember { mutableStateOf(0) }
-    val customReviews = remember { mutableStateListOf<GoogleReview>() }
 
+    // טען פרטים של המסעדה מ-API כשמסעדה משתנה
     LaunchedEffect(restaurant.placeId) {
         details = getRestaurantDetails(restaurant.placeId)
     }
 
+    // טען ביקורות מה-Firestore דרך ה-ViewModel כשמסעדה משתנה
+    LaunchedEffect(restaurant.id) {
+        viewModel.loadUserReviews(restaurant.id)
+    }
+
+    // רשימת ביקורות מה-Firestore (UserReview) שהפכנו ל-GoogleReview להצגה
+    val firestoreReviews: List<GoogleReview> = viewModel.userReviews.map { review: UserReview ->
+        GoogleReview(
+            author_name = review.authorName,
+            rating = review.rating,
+            text = review.text
+        )
+    }
+
+    val allReviews: List<GoogleReview> =
+        firestoreReviews + (details?.reviews ?: emptyList())
 
     Scaffold(
         topBar = {
-            // שמור את מצב הלב בלחיצה (נניח בהתחלה לא מלא)
             var isFavorite by remember { mutableStateOf(false) }
 
             TopAppBar(
@@ -189,7 +205,6 @@ fun RestaurantDetailScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // פירוט הימים והשעות
                         openingHoursText.forEach { line ->
                             val parts = line.split(": ", limit = 2)
                             val dayPart = parts.getOrNull(0) ?: line
@@ -215,11 +230,9 @@ fun RestaurantDetailScreen(
                 }
             }
 
-
-
             Spacer(modifier = Modifier.height(20.dp))
 
-            // שדות הוספת ביקורת
+            // **שדות הוספת ביקורת מחוברים ל-ViewModel**
             AddReviewSection(
                 userFullName = displayName,
                 userComment = userComment,
@@ -228,23 +241,24 @@ fun RestaurantDetailScreen(
                 onUserRatingChange = { userRating = it },
                 onSubmit = {
                     if (displayName.isNotBlank() && userComment.isNotBlank() && userRating > 0) {
-                        val newReview = GoogleReview(
-                            author_name = displayName,
+                        val newReview = UserReview(
+                            restaurantId = restaurant.id,
+                            authorName = displayName,
                             rating = userRating,
-                            text = userComment
+                            text = userComment,
+                            timestamp = System.currentTimeMillis()
                         )
-                        customReviews.add(0, newReview)
-                        userComment = ""
-                        userRating = 0
+                        viewModel.addUserReview(newReview) {
+                            // ניקוי השדות אחרי שמירה מוצלחת
+                            userComment = ""
+                            userRating = 0
+                        }
                     }
                 },
                 isSubmitEnabled = displayName.isNotBlank() && userComment.isNotBlank() && userRating > 0
             )
 
-
             Spacer(modifier = Modifier.height(20.dp))
-
-            val allReviews = customReviews + (details?.reviews ?: emptyList())
 
             if (allReviews.isNotEmpty()) {
                 Text(
@@ -319,6 +333,7 @@ fun RestaurantDetailScreen(
         }
     }
 }
+
 
 @Composable
 fun InfoRow(
