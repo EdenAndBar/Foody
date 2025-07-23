@@ -110,13 +110,13 @@ fun AppNavHost(
                     ?: viewModel.locationSearchResults.find { it.id == id }
                     ?: viewModel.mainSearchResults.find { it.id == id }
                     ?: viewModel.top10Restaurants.find { it.id == id }
+                    ?: viewModel.favorites.find { it.id == id }
             }
 
             if (restaurant != null) {
                 RestaurantDetailScreen(
                     restaurant = restaurant,
-                    onBackClick = { navController.popBackStack() },
-                    viewModel = viewModel
+                    onBackClick = { navController.popBackStack() }
                 )
             } else {
                 // אופציונלי: מסך fallback אם המסעדה לא נמצאה
