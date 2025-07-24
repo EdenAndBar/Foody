@@ -9,7 +9,7 @@ struct ReviewListView: View {
         if !reviews.isEmpty {
             Text("Reviews")
                 .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.horizontal)
 
             ScrollView {

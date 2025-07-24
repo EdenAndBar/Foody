@@ -6,6 +6,7 @@ extension KotlinBoolean {
         return self == KotlinBoolean(bool: true)
     }
 }
+
 struct BottomSheetView: View {
     let restaurant: Restaurant
     @Binding var favorites: [Restaurant]
@@ -16,6 +17,7 @@ struct BottomSheetView: View {
     @State private var userReviews: [GoogleReviewUI] = []
     @State private var isAddingReview = false
     let reviewManager = FirebaseReviewManager()
+    @State private var isOpeningHoursExpanded = false
     
     private func toggleFavorite() {
         if isFavorite {
@@ -41,33 +43,24 @@ struct BottomSheetView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text(restaurant.name)
-                .font(.title2)
-                .bold()
-            
-            Text(isOpen ? "Open Now" : "Closed")
-                .padding(6)
-                .background(isOpen ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
-                .foregroundColor(isOpen ? .green : .red)
-                .cornerRadius(8)
-                .font(.subheadline)
-                .bold()
-            
-            AsyncImage(url: URL(string: restaurant.photoUrl)) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
-                ProgressView()
-            }
-            .frame(height: 150)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            
-            HStack {
+            // שם ודירוג באותה שורה, מיושרים במרכז
+            HStack(spacing: 8) {
+                Text(restaurant.name)
+                    .font(.title2)
+                    .bold()
+
                 Image(systemName: "star.fill")
                     .foregroundColor(.yellow)
+                
                 Text(String(format: "%.1f", restaurant.rating))
                     .font(.subheadline)
+                    .foregroundColor(.primary)
             }
-            
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
+
+            // כתובת מתחת לשם
             if !restaurant.address.isEmpty {
                 Text(restaurant.address)
                     .font(.body)
@@ -75,7 +68,67 @@ struct BottomSheetView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }
-            
+
+            // התמונה
+            AsyncImage(url: URL(string: restaurant.photoUrl)) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(height: 150)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            // שורה שמציגה את מצב הפתיחה (Open Now/Closed) מצד שמאל
+            HStack {
+                Text(isOpen ? "Open Now" : "Closed")
+                    .padding(6)
+                    .background(isOpen ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                    .foregroundColor(isOpen ? .green : .red)
+                    .cornerRadius(8)
+                    .font(.subheadline)
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)  // יישור לשמאל
+
+                Spacer()
+
+                // כפתור לפתיחת שעות הפתיחה מצד ימין
+                Button(action: {
+                    withAnimation {
+                        isOpeningHoursExpanded.toggle()
+                    }
+                }) {
+                    HStack(spacing: 2) {
+                        Text("Opening Hours")
+                            .font(.headline)
+                            .foregroundColor(.blue)
+                        Image(systemName: isOpeningHoursExpanded ? "chevron.up" : "chevron.down")
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+            .padding(.horizontal)
+
+            // גלילה של שעות הפתיחה מיושרת לצד ימין
+            if isOpeningHoursExpanded, let openingHours = restaurant.openingHoursText {
+                ScrollView(.vertical) {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        ForEach(openingHours, id: \.self) { hourText in
+                            Text(hourText)
+                                .font(.subheadline)
+                                .bold()
+                                .padding(.trailing)
+                                .frame(maxWidth: .infinity, alignment: .trailing)  // יישור לימין
+                        }
+                    }
+                    .padding(.vertical)
+                    .padding(.trailing)
+                }
+                // תשאירי את הסביבה עם layoutDirection ל-RTL כדי ליישר לימין
+                .environment(\.layoutDirection, .leftToRight)
+                .frame(maxHeight: 120)
+            }
+
+            // שאר התוכן (כפתורי פעולה, ביקורות וכו')
             RestaurantActionButtons(
                 restaurant: restaurant,
                 favorites: $favorites,
@@ -85,7 +138,7 @@ struct BottomSheetView: View {
                 googleMapsURL: viewModel.googleMapsURL,
                 websiteURL: viewModel.websiteURL
             )
-            
+
             ReviewListView(
                 reviews: allReviews,
                 sessionUid: session.uid,
@@ -116,7 +169,7 @@ struct BottomSheetView: View {
         .sheet(isPresented: $isAddingReview) {
             AddReviewView(isPresented: $isAddingReview) { newReview in
                 userReviews.append(newReview)
-                
+
                 reviewManager.addReview(
                     for: restaurant.placeId,
                     userId: session.uid,
@@ -127,6 +180,7 @@ struct BottomSheetView: View {
             }
         }
     }
+
     
     private func deleteReview(reviewId: String) {
         userReviews.removeAll { $0.id == reviewId }
@@ -137,5 +191,4 @@ struct BottomSheetView: View {
             reviewId: reviewId
         )
     }
-
 }
