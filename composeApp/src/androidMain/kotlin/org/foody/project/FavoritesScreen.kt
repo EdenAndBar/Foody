@@ -33,7 +33,7 @@ fun FavoritesScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "Your Favorites",
+            text = "My Favorites",
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier

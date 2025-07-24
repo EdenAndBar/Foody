@@ -55,8 +55,8 @@ fun RestaurantDetailScreen(
     }
 
     // טען ביקורות מה-Firestore דרך ה-ViewModel כשמסעדה משתנה
-    LaunchedEffect(restaurant.id) {
-        viewModel.loadUserReviews(restaurant.id)
+    LaunchedEffect(restaurant.placeId) {
+        viewModel.loadUserReviews(restaurant.placeId)
     }
 
     // רשימת ביקורות מה-Firestore (UserReview) שהפכנו ל-GoogleReview להצגה
@@ -242,7 +242,7 @@ fun RestaurantDetailScreen(
                 onSubmit = {
                     if (displayName.isNotBlank() && userComment.isNotBlank() && userRating > 0) {
                         val newReview = UserReview(
-                            restaurantId = restaurant.id,
+                            restaurantId = restaurant.placeId,
                             authorName = displayName,
                             rating = userRating,
                             text = userComment,
