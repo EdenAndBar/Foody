@@ -4,6 +4,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
+import org.foody.project.currentTimeMillis
 
 @Serializable
 data class PlacesResponse(val results: List<PlaceResult>)
@@ -69,7 +70,7 @@ data class UserReview(
     val authorName: String = "",
     val text: String = "",
     val rating: Int = 0,
-    val timestamp: Long = System.currentTimeMillis(),
+    val timestamp: Long = currentTimeMillis(),
     val userId: String? = null
 )
 
