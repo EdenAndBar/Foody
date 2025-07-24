@@ -141,6 +141,7 @@ fun MainScreen(
                         color = Color(0xFFCE0E31)
                     ) {
                         FirebaseAuth.getInstance().signOut()
+                        viewModel.resetState()
                         onLogout()
                     }
                 }

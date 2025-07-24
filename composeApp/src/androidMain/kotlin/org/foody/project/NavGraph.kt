@@ -67,7 +67,7 @@ fun AppNavHost(
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate("mainWrapper") {
-                        popUpTo("login") { inclusive = true }
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     }
                 },
                 onNavigateToRegister = {

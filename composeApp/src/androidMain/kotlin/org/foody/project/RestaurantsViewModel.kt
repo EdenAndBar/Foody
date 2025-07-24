@@ -256,6 +256,40 @@ class RestaurantsViewModel : ViewModel() {
         showOpenOnly = !showOpenOnly
     }
 
+    fun resetState() {
+        // איפוס MAIN TAB
+        mainSearchQuery = ""
+        mainSearchResults = emptyList()
+        mainApiResult = emptyList()
+
+        // איפוס LOCATION TAB
+        locationSearchQuery = ""
+        locationSearchResults = emptyList()
+        isLocationSearchActive = false
+        citySuggestions = emptyList()
+        shouldFetchSuggestions = true
+        lastCitySearched = null
+        hasSearchedCity = false
+
+        // איפוס FAVORITES TAB
+        _favoritePlaceIds.value = emptySet()
+        shouldRefreshFavorites = false
+
+        // איפוס TOP10 TAB
+        top10Restaurants = emptyList()
+        isLoadingTop10 = false
+
+        // איפוס סינון ומיון
+        sortAlphabetically = false
+        showOpenOnly = false
+
+        // איפוס ביקורות משתמש
+        userReviews = emptyList()
+
+        // אפשר להוסיף איפוס נוסף לפי הצורך
+    }
+
+
     // --- USER REVIEWS ---
     var userReviews by mutableStateOf<List<UserReview>>(emptyList())
         private set

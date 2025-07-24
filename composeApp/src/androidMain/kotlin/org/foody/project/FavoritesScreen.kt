@@ -12,18 +12,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import places.Restaurant
 
 @Composable
 fun FavoritesScreen(
     viewModel: RestaurantsViewModel,
     onRestaurantClick: (String) -> Unit
 ) {
+    var searchQuery by remember { mutableStateOf("") }
     val favorites by remember { derivedStateOf { viewModel.favorites } }
     val isLoading by remember { derivedStateOf { viewModel.isLoading } }
 
     LaunchedEffect(Unit) {
         viewModel.loadFavorites()
+    }
+
+    // סינון רשימת המועדפים לפי שורת החיפוש
+    val filteredFavorites = favorites.filter { restaurant ->
+        restaurant.name.contains(searchQuery, ignoreCase = true)
     }
 
     Column(
@@ -37,9 +42,19 @@ fun FavoritesScreen(
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
-                .padding(bottom = 16.dp)
+                .padding(bottom = 8.dp)
                 .align(Alignment.CenterHorizontally)
         )
+
+        // הוספת שורת החיפוש כאן
+        SearchBar(
+            searchQuery = searchQuery,
+            onSearchChanged = { searchQuery = it },
+            onSearchSubmit = { /* אפשר להשאיר ריק או להוסיף התנהגות */ },
+            onClearClick = { searchQuery = "" }
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
 
         when {
             isLoading -> {
@@ -47,17 +62,17 @@ fun FavoritesScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = Color.Gray)
+                    CircularProgressIndicator(color = Color(0xFF4A4A4A))
                 }
             }
 
-            favorites.isEmpty() -> {
+            filteredFavorites.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No favorites yet",
+                        text = "No favorites found",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center
                     )
@@ -67,9 +82,9 @@ fun FavoritesScreen(
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    items(favorites) { restaurant ->
+                    items(filteredFavorites) { restaurant ->
                         RestaurantCard(
                             restaurant = restaurant,
                             isFavorite = true,
