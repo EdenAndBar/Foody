@@ -1,48 +1,46 @@
 package org.foody.project
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 import android.util.Log
 import places.Restaurant
+import androidx.compose.runtime.State
 import places.RestaurantApi
-import places.*
+import places.UserReview
 
 class RestaurantsViewModel : ViewModel() {
 
-    // MAIN TAB
-    var mainApiResult by mutableStateOf<List<Restaurant>>(emptyList())
-        private set
+    private val restaurantMap = mutableStateMapOf<String, Restaurant>()
+    val allRestaurants: List<Restaurant>
+        get() = restaurantMap.values.toList()
 
-    var mainOriginalRestaurants by mutableStateOf<List<Restaurant>>(emptyList())
+    // --- MAIN TAB ---
+    var mainSearchQuery by mutableStateOf("")
         private set
 
     var mainSearchResults by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
-    var mainSearchQuery by mutableStateOf("")
+    var mainApiResult by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
+    private val api = RestaurantApiService()
+
     fun loadInitialRestaurants(location: String) {
-        viewModelScope.launch {
-            isLoading = true
-            try {
-                val result = RestaurantApi.searchRestaurants(location)
-                mainApiResult = result
-                mainOriginalRestaurants = result
-                mainSearchResults = emptyList()
-            } catch (e: Exception) {
-                mainApiResult = emptyList()
-                mainOriginalRestaurants = emptyList()
-                mainSearchResults = emptyList()
-            }
+        isLoading = true
+        api.getRestaurants(location) { results ->
+            addOrUpdateRestaurants(results)
+            mainApiResult = results
+            mainSearchResults = emptyList()
             isLoading = false
         }
     }
@@ -56,6 +54,7 @@ class RestaurantsViewModel : ViewModel() {
             isLoading = true
             viewModelScope.launch {
                 api.getRestaurantsByName(mainSearchQuery) { results ->
+                    addOrUpdateRestaurants(results)
                     mainSearchResults = results
                     isLoading = false
                 }
@@ -70,14 +69,14 @@ class RestaurantsViewModel : ViewModel() {
         mainSearchResults = emptyList()
     }
 
-    // LOCATION TAB
+    // --- LOCATION TAB ---
+    var locationSearchQuery by mutableStateOf("")
+        private set
+
     var locationSearchResults by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
     var isLocationSearchActive by mutableStateOf(false)
-        private set
-
-    var locationSearchQuery by mutableStateOf("")
         private set
 
     var citySuggestions by mutableStateOf<List<String>>(emptyList())
@@ -104,9 +103,8 @@ class RestaurantsViewModel : ViewModel() {
             lastCitySearched = city
             viewModelScope.launch {
                 api.getRestaurantsByCity(city) { results ->
-                    val filtered = results.filter {
-                        it.address.lowercase().contains(trimmedCity)
-                    }
+                    val filtered = results.filter { it.address.lowercase().contains(trimmedCity) }
+                    addOrUpdateRestaurants(filtered)
                     locationSearchResults = filtered
                     hasSearchedCity = true
                     isLoading = false
@@ -149,44 +147,57 @@ class RestaurantsViewModel : ViewModel() {
         citySuggestions = emptyList()
     }
 
-    // FAVORITES TAB
-
-    var favorites by mutableStateOf<List<Restaurant>>(emptyList())
-        private set
-
+    // --- FAVORITES TAB ---
     private val auth = FirebaseAuth.getInstance()
     private val db = Firebase.firestore
     private val userId get() = auth.currentUser?.uid
 
-    private var _shouldRefreshFavorites by mutableStateOf(true)
-    val shouldRefreshFavorites: Boolean
-        get() = _shouldRefreshFavorites
+    var shouldRefreshFavorites by mutableStateOf(false)
+        private set
 
     fun markFavoritesDirty() {
-        _shouldRefreshFavorites = true
+        shouldRefreshFavorites = true
     }
 
     fun markFavoritesClean() {
-        _shouldRefreshFavorites = false
+        shouldRefreshFavorites = false
     }
 
-    fun toggleFavorite(restaurant: Restaurant) {
+    private val _favoritePlaceIds = mutableStateOf<Set<String>>(emptySet())
+    val favoritePlaceIds: State<Set<String>> = _favoritePlaceIds
+
+    val favorites: List<Restaurant>
+        get() = allRestaurants.filter { favoritePlaceIds.value.contains(it.placeId) }
+
+    fun toggleFavorite(placeId: String) {
+        val current = _favoritePlaceIds.value.toMutableSet()
+        if (current.contains(placeId)) {
+            current.remove(placeId)
+            removeFavoriteFromFirestore(placeId)
+        } else {
+            current.add(placeId)
+            addFavoriteToFirestore(placeId)
+        }
+        _favoritePlaceIds.value = current
+    }
+
+    private fun addFavoriteToFirestore(placeId: String) {
         userId?.let { uid ->
-            val favRef = db.collection("users").document(uid)
-                .collection("favorites").document(restaurant.id)
-
-            if (favorites.any { it.id == restaurant.id }) {
-                favRef.delete()
-                favorites = favorites.filterNot { it.id == restaurant.id }
-            } else {
+            restaurantMap[placeId]?.let { restaurant ->
+                val favRef = db.collection("users").document(uid)
+                    .collection("favorites").document(placeId)
                 favRef.set(restaurant)
-                favorites = favorites + restaurant
             }
-
-            markFavoritesDirty()
         }
     }
 
+    private fun removeFavoriteFromFirestore(placeId: String) {
+        userId?.let { uid ->
+            val favRef = db.collection("users").document(uid)
+                .collection("favorites").document(placeId)
+            favRef.delete()
+        }
+    }
 
     fun loadFavorites() {
         userId?.let { uid ->
@@ -194,7 +205,9 @@ class RestaurantsViewModel : ViewModel() {
             db.collection("users").document(uid).collection("favorites")
                 .get()
                 .addOnSuccessListener { result ->
-                    favorites = result.mapNotNull { it.toObject(Restaurant::class.java) }
+                    val favs = result.mapNotNull { it.toObject(Restaurant::class.java) }
+                    addOrUpdateRestaurants(favs) // מעדכן מסעדות במפה
+                    _favoritePlaceIds.value = favs.map { it.placeId }.toSet()
                     isLoading = false
                 }
                 .addOnFailureListener {
@@ -203,12 +216,12 @@ class RestaurantsViewModel : ViewModel() {
         }
     }
 
-
-    fun isFavorite(restaurantId: String): Boolean {
-        return favorites.any { it.id == restaurantId }
+    fun isFavorite(placeId: String): Boolean {
+        return favoritePlaceIds.value.contains(placeId)
     }
 
-    // TOP 10 TAB
+
+    // --- TOP 10 TAB ---
     var top10Restaurants by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
@@ -218,18 +231,17 @@ class RestaurantsViewModel : ViewModel() {
     fun loadTop10Restaurants() {
         isLoadingTop10 = true
         api.getTop10Restaurants { results ->
+            addOrUpdateRestaurants(results)
             top10Restaurants = results
             isLoadingTop10 = false
         }
     }
 
-    // COMMON
+    // --- COMMON ---
     var isLoading by mutableStateOf(false)
         private set
 
-    private val api = RestaurantApiService()
-
-    // Sorting & Filtering
+    // --- Sorting & Filtering ---
     var sortAlphabetically by mutableStateOf(false)
         private set
 
@@ -244,13 +256,12 @@ class RestaurantsViewModel : ViewModel() {
         showOpenOnly = !showOpenOnly
     }
 
-    // USER REVIEW
-
+    // --- USER REVIEWS ---
     var userReviews by mutableStateOf<List<UserReview>>(emptyList())
         private set
 
     fun loadUserReviews(restaurantId: String) {
-        Firebase.firestore.collection("reviews")
+        db.collection("reviews")
             .whereEqualTo("restaurantId", restaurantId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
@@ -262,12 +273,11 @@ class RestaurantsViewModel : ViewModel() {
                 userReviews = reviews
             }
             .addOnFailureListener { e ->
-                println("❌ Failed to load reviews: $e")
+                Log.e("ViewModel", "❌ Failed to load reviews: $e")
             }
     }
 
     fun addUserReview(review: UserReview, onComplete: (() -> Unit)? = null) {
-        val db = Firebase.firestore
         db.collection("reviews")
             .add(review)
             .addOnSuccessListener {
@@ -296,6 +306,10 @@ class RestaurantsViewModel : ViewModel() {
             }
     }
 
-
-
+    // --- פונקציה מרכזית לעדכון/הוספה במפה ---
+    private fun addOrUpdateRestaurants(restaurants: List<Restaurant>) {
+        for (restaurant in restaurants) {
+            restaurantMap[restaurant.placeId] = restaurant
+        }
+    }
 }

@@ -82,7 +82,7 @@ fun Top10Screen(
                         Top10RestaurantCard(
                             restaurant = restaurant,
                             index = index,
-                            onClick = { onRestaurantClick(restaurant.id) }
+                            onClick = { onRestaurantClick(restaurant.placeId) }
                         )
                     }
                 }

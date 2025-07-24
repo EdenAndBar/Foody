@@ -24,7 +24,7 @@ import places.Restaurant
 fun RestaurantCard(
     restaurant: Restaurant,
     isFavorite: Boolean,
-    onFavoriteClick: (Restaurant) -> Unit,
+    onFavoriteClick: (String) -> Unit,
     onTap: (Restaurant) -> Unit,
     isOpenNow: Boolean? = null
 ) {
@@ -104,7 +104,7 @@ fun RestaurantCard(
                     )
                     Spacer(modifier = Modifier.weight(5f))
                     IconButton(
-                        onClick = { onFavoriteClick(restaurant) },
+                        onClick = { onFavoriteClick(restaurant.placeId) },
                         modifier = Modifier.size(25.dp).padding(end = 0.dp)
                     ) {
                         Icon(

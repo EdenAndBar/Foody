@@ -68,6 +68,17 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.loadFavorites()
+    }
+
+    LaunchedEffect(viewModel.shouldRefreshFavorites) {
+        if (viewModel.shouldRefreshFavorites) {
+            viewModel.loadFavorites()
+            viewModel.markFavoritesClean()
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -166,26 +177,26 @@ fun MainScreen(
                         RestaurantScreen(
                             navController = navController,
                             viewModel = viewModel,
-                            onRestaurantClick = { id -> navController.navigate("details/$id") }
+                            onRestaurantClick = { placeId -> navController.navigate("details/$placeId") }
                         )
                     }
                     composable(BottomNavItem.Favorites.route) {
                         FavoritesScreen(
                             viewModel = viewModel,
-                            onRestaurantClick = { id -> navController.navigate("details/$id") }
+                            onRestaurantClick = { placeId -> navController.navigate("details/$placeId") }
                         )
                     }
                     composable(BottomNavItem.Location.route) {
                         LocationScreen(
                             viewModel = viewModel,
-                            onRestaurantClick = { id -> navController.navigate("details/$id") }
+                            onRestaurantClick = { placeId -> navController.navigate("details/$placeId") }
                         )
                     }
                     composable(BottomNavItem.Top10.route) {
                         Top10ScreenWrapper(
                             viewModel = viewModel,
-                            onRestaurantClick = { id -> navController.navigate("details/$id") },
-                            onFavoriteClick = { restaurant -> viewModel.toggleFavorite(restaurant) }
+                            onRestaurantClick = { placeId -> navController.navigate("details/$placeId") },
+                            onFavoriteClick = { restaurant -> viewModel.toggleFavorite(restaurant.placeId) }
                         )
                     }
 

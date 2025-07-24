@@ -102,15 +102,15 @@ fun AppNavHost(
         }
 
 
-        composable("details/{restaurantId}") { backStackEntry ->
-            val restaurantId = backStackEntry.arguments?.getString("restaurantId")
+        composable("details/{placeId}") { backStackEntry ->
+            val placeId = backStackEntry.arguments?.getString("placeId")
 
-            val restaurant = restaurantId?.let { id ->
-                viewModel.mainApiResult.find { it.id == id }
-                    ?: viewModel.locationSearchResults.find { it.id == id }
-                    ?: viewModel.mainSearchResults.find { it.id == id }
-                    ?: viewModel.top10Restaurants.find { it.id == id }
-                    ?: viewModel.favorites.find { it.id == id }
+            val restaurant = placeId?.let { id ->
+                viewModel.mainApiResult.find { it.placeId == id }
+                    ?: viewModel.locationSearchResults.find { it.placeId == id }
+                    ?: viewModel.mainSearchResults.find { it.placeId == id }
+                    ?: viewModel.top10Restaurants.find { it.placeId == id }
+                    ?: viewModel.favorites.find { it.placeId == id }
             }
 
             if (restaurant != null) {
@@ -120,7 +120,6 @@ fun AppNavHost(
                     viewModel = viewModel
                 )
             } else {
-                // אופציונלי: מסך fallback אם המסעדה לא נמצאה
                 Text("Restaurant not found")
             }
         }

@@ -170,9 +170,9 @@ fun LocationScreen(
                 items(filteredRestaurants) { restaurant ->
                     RestaurantCard(
                         restaurant = restaurant,
-                        isFavorite = favorites.contains(restaurant),
+                        isFavorite = viewModel.isFavorite(restaurant.placeId),
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
-                        onTap = { onRestaurantClick(restaurant.id) }
+                        onTap = { onRestaurantClick(restaurant.placeId) }
                     )
                 }
             }

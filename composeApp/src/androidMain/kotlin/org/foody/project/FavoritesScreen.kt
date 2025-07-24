@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import places.Restaurant
 
 @Composable
 fun FavoritesScreen(
@@ -21,13 +22,9 @@ fun FavoritesScreen(
     val favorites by remember { derivedStateOf { viewModel.favorites } }
     val isLoading by remember { derivedStateOf { viewModel.isLoading } }
 
-    LaunchedEffect(viewModel.shouldRefreshFavorites) {
-        if (viewModel.shouldRefreshFavorites) {
-            viewModel.loadFavorites()
-            viewModel.markFavoritesClean()
-        }
+    LaunchedEffect(Unit) {
+        viewModel.loadFavorites()
     }
-
 
     Column(
         modifier = Modifier
@@ -77,10 +74,10 @@ fun FavoritesScreen(
                             restaurant = restaurant,
                             isFavorite = true,
                             onFavoriteClick = {
-                                viewModel.toggleFavorite(restaurant)
+                                viewModel.toggleFavorite(restaurant.placeId)
                             },
                             onTap = {
-                                onRestaurantClick(restaurant.id)
+                                onRestaurantClick(restaurant.placeId)
                             }
                         )
                     }

@@ -26,7 +26,7 @@ fun RestaurantScreen(
     val isLoading = viewModel.isLoading
     val searchResults = viewModel.mainSearchResults
     val favorites = viewModel.favorites
-    val originalRestaurants = viewModel.mainOriginalRestaurants
+    val originalRestaurants = viewModel.mainApiResult
 
     var sortOption by remember { mutableStateOf("none") }
     var ratingRange by remember { mutableStateOf(0f..5f) }
@@ -103,9 +103,9 @@ fun RestaurantScreen(
                 items(filteredRestaurants) { restaurant ->
                     RestaurantCard(
                         restaurant = restaurant,
-                        isFavorite = favorites.contains(restaurant),
+                        isFavorite = viewModel.isFavorite(restaurant.placeId),
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
-                        onTap = { onRestaurantClick(restaurant.id) }
+                        onTap = { onRestaurantClick(restaurant.placeId) }
                     )
                 }
             }
