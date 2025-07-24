@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.Query
+import android.util.Log
 import places.Restaurant
 import places.RestaurantApi
 import places.*
@@ -251,13 +252,12 @@ class RestaurantsViewModel : ViewModel() {
     fun loadUserReviews(restaurantId: String) {
         Firebase.firestore.collection("reviews")
             .whereEqualTo("restaurantId", restaurantId)
-            .orderBy("timestamp", Query.Direction.DESCENDING) // ⬅️ חדש: לפי זמן, מהחדש לישן
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { snapshot ->
-                val reviews = snapshot.documents.mapNotNull { it.toObject(UserReview::class.java) }
-                println("🔄 Loaded ${reviews.size} reviews for $restaurantId")
-                reviews.forEach {
-                    println("📝 ${it.authorName} (${it.timestamp}): ${it.text}")
+                val reviews = snapshot.documents.mapNotNull { doc ->
+                    val review = doc.toObject(UserReview::class.java)
+                    review?.copy(id = doc.id)
                 }
                 userReviews = reviews
             }
@@ -271,14 +271,31 @@ class RestaurantsViewModel : ViewModel() {
         db.collection("reviews")
             .add(review)
             .addOnSuccessListener {
-                // עדכן את הרשימה מקומית
-                userReviews = listOf(review) + userReviews
+                loadUserReviews(review.restaurantId)
                 onComplete?.invoke()
             }
             .addOnFailureListener {
                 onComplete?.invoke()
             }
     }
+
+    fun deleteUserReview(restaurantId: String, authorName: String, text: String) {
+        db.collection("reviews")
+            .whereEqualTo("restaurantId", restaurantId)
+            .whereEqualTo("authorName", authorName)
+            .whereEqualTo("text", text)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    document.reference.delete()
+                }
+                loadUserReviews(restaurantId)
+            }
+            .addOnFailureListener {
+                Log.e("ViewModel", "❌ Failed to delete review: $it")
+            }
+    }
+
 
 
 }

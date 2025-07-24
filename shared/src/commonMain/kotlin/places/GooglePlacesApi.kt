@@ -64,12 +64,15 @@ data class GoogleReview(
 )
 
 data class UserReview(
+    val id: String = "",
     val restaurantId: String = "",
     val authorName: String = "",
     val text: String = "",
     val rating: Int = 0,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val userId: String? = null
 )
+
 
 @Serializable
 data class OpeningHours(

@@ -60,16 +60,16 @@ fun RestaurantDetailScreen(
     }
 
     // רשימת ביקורות מה-Firestore (UserReview) שהפכנו ל-GoogleReview להצגה
-    val firestoreReviews: List<GoogleReview> = viewModel.userReviews.map { review: UserReview ->
-        GoogleReview(
-            author_name = review.authorName,
-            rating = review.rating,
-            text = review.text
-        )
-    }
+    val firestoreReviews = viewModel.userReviews
+    val googleReviews = details?.reviews ?: emptyList()
 
-    val allReviews: List<GoogleReview> =
-        firestoreReviews + (details?.reviews ?: emptyList())
+    val allReviews = firestoreReviews.map {
+        GoogleReview(
+            author_name = it.authorName,
+            rating = it.rating,
+            text = it.text
+        )
+    } + googleReviews
 
     Scaffold(
         topBar = {
@@ -281,13 +281,43 @@ fun RestaurantDetailScreen(
                             shadowElevation = 2.dp,
                             color = Color.White
                         ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = review.author_name,
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
-                                    color = Color.Black
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = review.author_name,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp),
+                                        color = Color.Black
+                                    )
+
+                                    if (review.author_name == displayName) {
+                                        IconButton(onClick = {
+                                            coroutineScope.launch {
+                                                viewModel.deleteUserReview(
+                                                    restaurantId = restaurant.id,
+                                                    authorName = review.author_name,
+                                                    text = review.text
+                                                )
+                                            }
+                                        },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Delete Review",
+                                                tint = Color.Gray,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = "${review.rating}",
