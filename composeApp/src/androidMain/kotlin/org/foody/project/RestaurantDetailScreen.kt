@@ -73,7 +73,8 @@ fun RestaurantDetailScreen(
 
     Scaffold(
         topBar = {
-            var isFavorite by remember { mutableStateOf(false) }
+
+            val isFavorite by remember { derivedStateOf { viewModel.isFavorite(restaurant.placeId) } }
 
             TopAppBar(
                 title = {
@@ -95,7 +96,7 @@ fun RestaurantDetailScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            isFavorite = !isFavorite
+                            viewModel.toggleFavorite(restaurant.placeId)
                         }
                     ) {
                         Icon(
@@ -110,6 +111,7 @@ fun RestaurantDetailScreen(
                     titleContentColor = Color.Black
                 )
             )
+
         },
         containerColor = Color(0xFFF0F0F3)
     ) { paddingValues ->
