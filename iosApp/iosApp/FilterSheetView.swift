@@ -20,6 +20,12 @@ struct FilterSheetView: View {
                     .padding(.vertical)
                 }
             }
+            .navigationBarItems(trailing:
+                Button("Clear") {
+                    filter.onlyOpen = false
+                    filter.ratingRange = 0...5
+                }
+            )
             .navigationTitle("Filter")
             .navigationBarTitleDisplayMode(.inline)
         }

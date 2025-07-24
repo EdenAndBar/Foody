@@ -47,6 +47,7 @@ struct SearchAndFilterBar: View {
                     Button("Name") { filter.sortField = .name }
                     Button("Rating") { filter.sortField = .rating }
                 }
+
                 Section("Direction") {
                     Button {
                         filter.sortDirection = filter.sortDirection == .ascending ? .descending : .ascending
@@ -57,6 +58,15 @@ struct SearchAndFilterBar: View {
                         )
                     }
                 }
+
+                // 🔴 Reset מתחת ל־Direction
+                Button(role: .destructive) {
+                    filter.sortField = .name
+                    filter.sortDirection = .ascending
+                } label: {
+                    Text("Reset")
+                }
+
             } label: {
                 Image(systemName: "arrow.up.arrow.down")
                     .padding(8)
