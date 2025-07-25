@@ -57,7 +57,6 @@ struct ContentView: View {
                             }
                         }
                     } else {
-                        ScrollView {
                             VStack {
                                 RestaurantListView(
                                     title: "Home",
@@ -72,7 +71,6 @@ struct ContentView: View {
                                     showFilterSheet: $showFilterSheet
                                 )
                             }
-                        }
                         .refreshable {
                             refreshRestaurants()
                         }

@@ -87,5 +87,3 @@ struct RestaurantListView: View {
         }
     }
 }
-
-
