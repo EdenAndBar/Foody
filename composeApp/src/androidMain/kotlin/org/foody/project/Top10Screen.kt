@@ -39,7 +39,7 @@ fun Top10Screen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            // כותרת - מיושרת למרכז
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -54,7 +54,6 @@ fun Top10Screen(
                 )
             }
 
-            // כפתור רענון - מיושר לימין
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

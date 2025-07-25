@@ -26,7 +26,7 @@ fun FavoritesScreen(
         viewModel.loadFavorites()
     }
 
-    // סינון רשימת המועדפים לפי שורת החיפוש
+    // search bar filter
     val filteredFavorites = favorites.filter { restaurant ->
         restaurant.name.contains(searchQuery, ignoreCase = true)
     }
@@ -46,7 +46,7 @@ fun FavoritesScreen(
                 .align(Alignment.CenterHorizontally)
         )
 
-        // הוספת שורת החיפוש כאן
+        // SearchBar
         SearchBar(
             searchQuery = searchQuery,
             onSearchChanged = { searchQuery = it },

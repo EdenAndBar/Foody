@@ -33,7 +33,7 @@ fun AboutUsScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // חץ חזרה – ממוקם קבוע בפינה השמאלית העליונה
+        // back arrow
         IconButton(
             onClick = onBackClick,
             modifier = Modifier
@@ -47,7 +47,6 @@ fun AboutUsScreen(
             )
         }
 
-        // תוכן גלול בתוך עמודה
         Column(
             modifier = Modifier
                 .fillMaxSize()

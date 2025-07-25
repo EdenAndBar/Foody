@@ -44,7 +44,6 @@ fun SearchBar(
             .background(Color(0xFFE0E0E5), RoundedCornerShape(12.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // כפתור ניקוי (הופיע רק אם יש טקסט)
         if (searchQuery.isNotEmpty()) {
             IconButton(onClick = {
                 onClearClick()
@@ -58,7 +57,7 @@ fun SearchBar(
                 )
             }
         } else {
-            Spacer(modifier = Modifier.width(8.dp)) // ריווח כשהכפתור לא מופיע
+            Spacer(modifier = Modifier.width(8.dp))
         }
 
         TextField(

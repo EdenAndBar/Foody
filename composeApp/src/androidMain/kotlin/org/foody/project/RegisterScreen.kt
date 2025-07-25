@@ -212,7 +212,7 @@ fun RegisterScreen(
                     FirebaseAuthManager.register(
                         email = email,
                         password = password,
-                        fullName = "$firstName $lastName", // 👈 נוסיף את זה
+                        fullName = "$firstName $lastName",
                         onSuccess = { user ->
                             isLoading = false
                             onRegisterSuccess(user.email ?: "")

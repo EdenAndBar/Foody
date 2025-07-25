@@ -49,17 +49,14 @@ fun RestaurantDetailScreen(
     var userComment by remember { mutableStateOf("") }
     var userRating by remember { mutableStateOf(0) }
 
-    // טען פרטים של המסעדה מ-API כשמסעדה משתנה
     LaunchedEffect(restaurant.placeId) {
         details = getRestaurantDetails(restaurant.placeId)
     }
 
-    // טען ביקורות מה-Firestore דרך ה-ViewModel כשמסעדה משתנה
     LaunchedEffect(restaurant.placeId) {
         viewModel.loadUserReviews(restaurant.placeId)
     }
 
-    // רשימת ביקורות מה-Firestore (UserReview) שהפכנו ל-GoogleReview להצגה
     val firestoreReviews = viewModel.userReviews
     val googleReviews = details?.reviews ?: emptyList()
 
@@ -234,7 +231,6 @@ fun RestaurantDetailScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // **שדות הוספת ביקורת מחוברים ל-ViewModel**
             AddReviewSection(
                 userFullName = displayName,
                 userComment = userComment,
@@ -251,7 +247,6 @@ fun RestaurantDetailScreen(
                             timestamp = System.currentTimeMillis()
                         )
                         viewModel.addUserReview(newReview) {
-                            // ניקוי השדות אחרי שמירה מוצלחת
                             userComment = ""
                             userRating = 0
                         }
@@ -431,7 +426,7 @@ fun AddReviewSection(
             .padding(top = 8.dp),
         shape = RoundedCornerShape(16.dp),
         color = background,
-        shadowElevation = 4.dp  // <-- מוסיף הצללה
+        shadowElevation = 4.dp
     ) {
         Column(
             modifier = Modifier

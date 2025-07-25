@@ -5,7 +5,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 
-
 object FirebaseAuthManager {
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
@@ -67,8 +66,6 @@ object FirebaseAuthManager {
                 }
             }
     }
-
-
 
     fun loginWithGoogle(
         idToken: String,

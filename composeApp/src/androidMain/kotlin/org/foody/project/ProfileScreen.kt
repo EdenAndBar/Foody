@@ -51,7 +51,7 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(background)
     ) {
-        // החץ בפינה שמאלית עליונה
+        // Back arrow
         IconButton(
             onClick = onBackClick,
             modifier = Modifier
@@ -73,7 +73,7 @@ fun ProfileScreen(
                 .wrapContentHeight()
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .align(Alignment.Center) // 💥 מוסיף יישור לאמצע התצוגה
+                .align(Alignment.Center)
         ) {
 
             Box(
@@ -144,12 +144,12 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // כפתור להראות/להסתיר שדה סיסמה
+            // show/don't show password
             TextButton(
                 onClick = {
                     showPasswordField = !showPasswordField
                     if (!showPasswordField) {
-                        newPassword = "" // מאפס את השדה כשמסירים את האפשרות
+                        newPassword = ""
                         passwordVisible = false
                     }
                 }
@@ -164,7 +164,6 @@ fun ProfileScreen(
             if (showPasswordField) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // שדה סיסמה עם אייקון עין להראות/להסתיר
                 TextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },

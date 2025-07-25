@@ -29,7 +29,7 @@ fun AppNavHost(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // בקשת הרשאת מיקום
+    // location permission
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -93,9 +93,8 @@ fun AppNavHost(
                 navController = navController,
                 viewModel = viewModel,
                 onLogout = {
-                    // מה לעשות כשמתבצע logout? למשל:
                     navController.navigate("login") {
-                        popUpTo(0) // מנקה את הסטאק
+                        popUpTo(0)
                     }
                 }
             )

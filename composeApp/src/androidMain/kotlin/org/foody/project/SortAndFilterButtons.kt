@@ -120,7 +120,7 @@ fun FilterButton(
             )
         ) {
             Icon(
-                imageVector = Icons.Default.FilterList,  // אייקון פילטר
+                imageVector = Icons.Default.FilterList,
                 contentDescription = "Filter",
                 tint = Color.DarkGray,
                 modifier = Modifier.size(16.dp)

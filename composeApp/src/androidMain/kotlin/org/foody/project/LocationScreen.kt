@@ -37,7 +37,6 @@ fun LocationScreen(
     //scroll to the top of the page
     val listState = rememberLazyListState()
 
-    // הצעות לעיר
     LaunchedEffect(searchQuery) {
         val trimmed = searchQuery.trim()
         if (!viewModel.hasSearchedCity && viewModel.shouldFetchSuggestions && trimmed.isNotEmpty()) {
@@ -47,7 +46,7 @@ fun LocationScreen(
         }
     }
 
-    // טעינה מחדש רק אם לא חזרו תוצאות
+    // reload if there is no results
     LaunchedEffect(Unit) {
         viewModel.lastCitySearched?.let { lastCity ->
             if (lastCity.isNotBlank() && locationSearchResults.isEmpty()) {
@@ -61,7 +60,7 @@ fun LocationScreen(
             .fillMaxSize()
             .background(Color(0xFFF2F2F7))
     ) {
-        // שורת חיפוש לעיר
+        // Search bar by city
         SearchBar(
             searchQuery = searchQuery,
             onSearchChanged = { viewModel.updateLocationSearchQuery(it) },
@@ -113,7 +112,7 @@ fun LocationScreen(
             )
         }
 
-        // הצעות לעיר
+        // City Suggestions
         if (citySuggestions.isNotEmpty()) {
             Card(
                 modifier = Modifier
@@ -154,7 +153,6 @@ fun LocationScreen(
             }
         }
 
-        // טוען...
         if (isLoading) {
             Box(
                 modifier = Modifier
@@ -165,7 +163,7 @@ fun LocationScreen(
                 CircularProgressIndicator(color = Color(0xFF4A4A4A))
             }
         }
-        // לא בוצע חיפוש
+
         else if (!isLocationSearchActive) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -174,7 +172,7 @@ fun LocationScreen(
                 Text("Please enter a city to search", color = Color.Gray)
             }
         }
-        // אין תוצאות
+        // no results
         else if (locationSearchResults.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -183,7 +181,7 @@ fun LocationScreen(
                 Text("No restaurants found.", color = Color.Gray, fontSize = 16.sp)
             }
         }
-        // תוצאות
+        // results
         else {
             val filteredRestaurants = filterAndSortRestaurants(
                 locationSearchResults,

@@ -69,7 +69,7 @@ class RestaurantsViewModel : ViewModel() {
         mainSearchResults = emptyList()
     }
 
-    // --- LOCATION TAB ---
+    // LOCATION TAB
     var locationSearchQuery by mutableStateOf("")
         private set
 
@@ -147,7 +147,7 @@ class RestaurantsViewModel : ViewModel() {
         citySuggestions = emptyList()
     }
 
-    // --- FAVORITES TAB ---
+    // FAVORITES TAB
     private val auth = FirebaseAuth.getInstance()
     private val db = Firebase.firestore
     private val userId get() = auth.currentUser?.uid
@@ -221,7 +221,7 @@ class RestaurantsViewModel : ViewModel() {
     }
 
 
-    // --- TOP 10 TAB ---
+    // TOP 10 TAB
     var top10Restaurants by mutableStateOf<List<Restaurant>>(emptyList())
         private set
 
@@ -237,11 +237,11 @@ class RestaurantsViewModel : ViewModel() {
         }
     }
 
-    // --- COMMON ---
+    // COMMON
     var isLoading by mutableStateOf(false)
         private set
 
-    // --- Sorting & Filtering ---
+    // Sorting & Filtering
     var sortAlphabetically by mutableStateOf(false)
         private set
 
@@ -285,12 +285,10 @@ class RestaurantsViewModel : ViewModel() {
 
         // איפוס ביקורות משתמש
         userReviews = emptyList()
-
-        // אפשר להוסיף איפוס נוסף לפי הצורך
     }
 
 
-    // --- USER REVIEWS ---
+    // USER REVIEWS
     var userReviews by mutableStateOf<List<UserReview>>(emptyList())
         private set
 
@@ -340,7 +338,7 @@ class RestaurantsViewModel : ViewModel() {
             }
     }
 
-    // --- פונקציה מרכזית לעדכון/הוספה במפה ---
+    // add Or Update Restaurants in the map
     private fun addOrUpdateRestaurants(restaurants: List<Restaurant>) {
         for (restaurant in restaurants) {
             restaurantMap[restaurant.placeId] = restaurant
