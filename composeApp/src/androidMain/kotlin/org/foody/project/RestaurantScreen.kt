@@ -15,10 +15,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.filled.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.filled.Refresh
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.foundation.shape.RoundedCornerShape
 
 
 @Composable
@@ -61,6 +59,7 @@ fun RestaurantScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             // sort and filter buttons on the left
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -82,8 +81,8 @@ fun RestaurantScreen(
             }
 
             // refresh button on the right
-            OutlinedButton(
-                onClick = {
+            RefreshButton(
+                onRefresh = {
                     viewModel.clearMainSearch()
                     sortOption = "none"
                     ratingRange = 0f..5f
@@ -91,22 +90,8 @@ fun RestaurantScreen(
                     coroutineScope.launch {
                         listState.scrollToItem(0)
                     }
-                },
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.size(36.dp, 36.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Refresh",
-                    tint = Color.DarkGray,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
+                }
+            )
         }
 
         if (searchResults.isNotEmpty()) {

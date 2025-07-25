@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,6 +33,9 @@ fun LocationScreen(
     var sortOption by remember { mutableStateOf("none") }
     var ratingRange by remember { mutableStateOf(0f..5f) }
     var isOpenNow by remember { mutableStateOf(false) }
+
+    //scroll to the top of the page
+    val listState = rememberLazyListState()
 
     // הצעות לעיר
     LaunchedEffect(searchQuery) {
@@ -68,21 +72,43 @@ fun LocationScreen(
         )
 
         Row(
-            modifier = Modifier.padding(horizontal = 15.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            SortButton(
-                selectedSortOption = sortOption,
-                onSortSelected = { sortOption = it }
-            )
-            FilterButton(
-                isOpenNow = isOpenNow,
-                onOpenNowToggle = { isOpenNow = !isOpenNow },
-                ratingRange = ratingRange,
-                onRatingRangeChange = { ratingRange = it },
-                onClearFilters = {
-                    isOpenNow = false
+
+            // sort and filter buttons on the left
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                SortButton(
+                    selectedSortOption = sortOption,
+                    onSortSelected = { sortOption = it }
+                )
+                FilterButton(
+                    isOpenNow = isOpenNow,
+                    onOpenNowToggle = { isOpenNow = !isOpenNow },
+                    ratingRange = ratingRange,
+                    onRatingRangeChange = { ratingRange = it },
+                    onClearFilters = {
+                        isOpenNow = false
+                        ratingRange = 0f..5f
+                    }
+                )
+            }
+
+            // refresh button on the right
+            RefreshButton(
+                onRefresh = {
+                    viewModel.clearMainSearch()
+                    sortOption = "none"
                     ratingRange = 0f..5f
+                    isOpenNow = false
+                    coroutineScope.launch {
+                        listState.scrollToItem(0)
+                    }
                 }
             )
         }
@@ -166,7 +192,7 @@ fun LocationScreen(
                 ratingRange
             )
 
-            LazyColumn {
+            LazyColumn(state = listState) {
                 items(filteredRestaurants) { restaurant ->
                     RestaurantCard(
                         restaurant = restaurant,
