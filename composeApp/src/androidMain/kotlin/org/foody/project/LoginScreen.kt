@@ -74,9 +74,8 @@ fun LoginScreen(
                 painter = painterResource(id = R.drawable.foody_logo),
                 contentDescription = "App Logo",
                 modifier = Modifier
-                    .height(250.dp)
-                    .width(250.dp)
-                    .padding(bottom = 8.dp)
+                    .height(230.dp)
+                    .width(230.dp)
             )
 
             Text(
