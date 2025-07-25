@@ -14,6 +14,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.filled.Refresh
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+
 
 @Composable
 fun RestaurantScreen(
@@ -32,6 +38,10 @@ fun RestaurantScreen(
     var ratingRange by remember { mutableStateOf(0f..5f) }
     var isOpenNow by remember { mutableStateOf(false) }
 
+    //scroll to the top of the page
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,23 +55,58 @@ fun RestaurantScreen(
         )
 
         Row(
-            modifier = Modifier.padding(horizontal = 15.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            SortButton(
-                selectedSortOption = sortOption,
-                onSortSelected = { sortOption = it }
-            )
-            FilterButton(
-                isOpenNow = isOpenNow,
-                onOpenNowToggle = { isOpenNow = !isOpenNow },
-                ratingRange = ratingRange,
-                onRatingRangeChange = { ratingRange = it },
-                onClearFilters = {
-                    isOpenNow = false
+            // sort and filter buttons on the left
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                SortButton(
+                    selectedSortOption = sortOption,
+                    onSortSelected = { sortOption = it }
+                )
+                FilterButton(
+                    isOpenNow = isOpenNow,
+                    onOpenNowToggle = { isOpenNow = !isOpenNow },
+                    ratingRange = ratingRange,
+                    onRatingRangeChange = { ratingRange = it },
+                    onClearFilters = {
+                        isOpenNow = false
+                        ratingRange = 0f..5f
+                    }
+                )
+            }
+
+            // refresh button on the right
+            OutlinedButton(
+                onClick = {
+                    viewModel.clearMainSearch()
+                    sortOption = "none"
                     ratingRange = 0f..5f
-                }
-            )
+                    isOpenNow = false
+                    coroutineScope.launch {
+                        listState.scrollToItem(0)
+                    }
+                },
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.size(36.dp, 36.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Refresh",
+                    tint = Color.DarkGray,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
 
         if (searchResults.isNotEmpty()) {
@@ -99,7 +144,7 @@ fun RestaurantScreen(
             val baseList = if (searchResults.isNotEmpty()) searchResults else restaurants
             val filteredRestaurants = filterAndSortRestaurants(baseList, sortOption, isOpenNow, ratingRange)
 
-            LazyColumn {
+            LazyColumn(state = listState){
                 items(filteredRestaurants) { restaurant ->
                     RestaurantCard(
                         restaurant = restaurant,
